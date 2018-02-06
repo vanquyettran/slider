@@ -36,18 +36,30 @@ function initSlider(root) {
     var autorunDelay = parseInt(root.getAttribute("data-autorun-delay"));
     var autorunPauseOnHover = root.getAttribute("data-autorun-pause-on-hover") === "true";
 
-    // Display options
+    // Thumbnails
+    var displayThumbnailsDefault = root.getAttribute("data-display-thumbnails") === "true";
+    var displayThumbnailsLarge = root.getAttribute("data-display-thumbnails-large");
+    var displayThumbnailsMedium = root.getAttribute("data-display-thumbnails-medium");
+    var displayThumbnailsSmall = root.getAttribute("data-display-thumbnails-small");
+
+    // Arrows
     var displayArrowsDefault = root.getAttribute("data-display-arrows") === "true";
     var displayArrowsLarge = root.getAttribute("data-display-arrows-large");
     var displayArrowsMedium = root.getAttribute("data-display-arrows-medium");
     var displayArrowsSmall = root.getAttribute("data-display-arrows-small");
 
+    // Navigator
     var displayNavigatorDefault = root.getAttribute("data-display-navigator") === "true";
     var displayNavigatorLarge = root.getAttribute("data-display-navigator-large");
     var displayNavigatorMedium = root.getAttribute("data-display-navigator-medium");
     var displayNavigatorSmall = root.getAttribute("data-display-navigator-small");
 
     var displayNavigatorPageNumber = root.getAttribute("data-display-navigator-page-number") === "true";
+
+    // swipe angle max
+    var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 45;
+
+    var itemAspectRatioConf = root.getAttribute("data-item-aspect-ratio");
 
     //TODO: Handle errors
 
@@ -76,13 +88,27 @@ function initSlider(root) {
         throw Error("Previews must be the numbers are not less than 0.");
     }
     if (!isNaN(slideTime) && slideTime < 0) {
-        throw Error("Slide time delay must be an integer is not less than 0.");
+        throw Error("Slide time must be an integer is not less than 0.");
+    } else if (slideTime % 10 !== 0) {
+        throw Error("Slide time must be the multiple of 10.");
     }
     if (!isNaN(autorunDelay) && autorunDelay < 100) {
         throw Error("Autorun delay must be an integer is is not less than 100.");
     }
+    if (maxSwipeAngle > 90 || maxSwipeAngle < 0) {
+        throw Error("Max swipe angle mus be in the range [0, 90]");
+    }
 
     //TODO: Main code
+
+    var roundDistance = function(d) {
+        return Math.round(d);
+    };
+
+    var getAverageMotionSpeed = function (d, t) {
+        var k = 1000000;
+        return Math.round(k * d / t) / k;
+    };
 
     if (isNaN(viewLargeOffset)) {
         viewLargeOffset = 900;
@@ -92,7 +118,12 @@ function initSlider(root) {
         slideTime = 500;
     }
 
-    var pageSize, previewLeft, previewRight, displayArrows, displayNavigator;
+    var rootChildren = [].map.call(root.children, function (child) {
+        child.clickable = child.getAttribute("data-clickable") === "true";
+        return child;
+    });
+
+    var pageSize, previewLeft, previewRight, displayThumbnails, displayArrows, displayNavigator;
 
     var calcViewWidthBasedValues = function () {
         var viewWidth = root.clientWidth;
@@ -100,27 +131,40 @@ function initSlider(root) {
             pageSize = isNaN(pageSizeLarge) ? pageSizeDefault : pageSizeLarge;
             previewLeft = isNaN(previewLeftLarge) ? previewLeftDefault : previewLeftLarge;
             previewRight = isNaN(previewRightLarge) ? previewRightDefault : previewRightLarge;
+            displayThumbnails = !/true|false/.test(displayThumbnailsLarge) ? displayThumbnailsDefault : displayThumbnailsLarge === "true";
             displayArrows = !/true|false/.test(displayArrowsLarge) ? displayArrowsDefault : displayArrowsLarge === "true";
             displayNavigator = !/true|false/.test(displayNavigatorLarge) ? displayNavigatorDefault : displayNavigatorLarge === "true";
         } else if (viewWidth >= viewMediumOffset) { // Medium viewport
             pageSize = isNaN(pageSizeMedium) ? pageSizeDefault : pageSizeMedium;
             previewLeft = isNaN(previewLeftMedium) ? previewLeftDefault : previewLeftMedium;
             previewRight = isNaN(previewRightMedium) ? previewRightDefault : previewRightMedium;
+            displayThumbnails = !/true|false/.test(displayThumbnailsMedium) ? displayThumbnailsDefault : displayThumbnailsMedium === "true";
             displayArrows = !/true|false/.test(displayArrowsMedium) ? displayArrowsDefault : displayArrowsMedium === "true";
             displayNavigator = !/true|false/.test(displayNavigatorMedium) ? displayNavigatorDefault : displayNavigatorMedium === "true";
         } else { // Small viewport
             pageSize = isNaN(pageSizeSmall) ? pageSizeDefault : pageSizeSmall;
             previewLeft = isNaN(previewLeftSmall) ? previewLeftDefault : previewLeftSmall;
             previewRight = isNaN(previewRightSmall) ? previewRightDefault : previewRightSmall;
+            displayThumbnails = !/true|false/.test(displayThumbnailsSmall) ? displayThumbnailsDefault : displayThumbnailsSmall === "true";
             displayArrows = !/true|false/.test(displayArrowsSmall) ? displayArrowsDefault : displayArrowsSmall === "true";
             displayNavigator = !/true|false/.test(displayNavigatorSmall) ? displayNavigatorDefault : displayNavigatorSmall === "true";
+        }
+
+        if (rootChildren.length <= pageSize) {
+            displayThumbnails = false;
+            previewLeft = 0;
+            previewRight = 0;
         }
     };
 
     calcViewWidthBasedValues();
 
     root.style = style({
-        display: "block"
+        display: "block",
+        "padding-left": 0,
+        "padding-right": 0,
+        "border-left": "none",
+        "border-right": "none"
     });
 
     var pageWidth = 0, itemWidth = 0;
@@ -131,43 +175,71 @@ function initSlider(root) {
     };
     calcWidths();
 
-    var sliderItems = [].map.call(root.children, function (child) {
+    var sliderItemStyle = style({
+        display: "block",
+        position: "absolute",
+        margin: 0,
+        padding: 0,
+        border: "none",
+        transition: "unset",
+        overflow: "hidden",
+        "list-style": "none"
+    });
+
+    var sliderItems = [];
+
+    var mainItems = [].map.call(rootChildren, function (child, index) {
         return element(
             "li",
             child.cloneNode(true),
             {
-                style: style({
-                    display: "block",
-                    position: "absolute",
-                    margin: 0,
-                    padding: 0,
-                    border: "none",
-                    transition: slideTime + "ms",
-                    "list-style": "none"
-                })
+                onclick: function () {
+                    if (child.clickable) {
+                        var newIndex = displayThumbnails ? (index + pageSize) : index;
+                        setCurrentIndex(newIndex);
+                        makeMove();
+                    }
+                },
+                style: sliderItemStyle,
+                "class": "slider-item" + (child.clickable ? " clickable" : "")
             }
         );
     });
 
-    var pageCount = 0;
-    var calcPageCount = function () {
-        pageCount = Math.floor(sliderItems.length / pageSize) + (sliderItems.length % pageSize > 0 ? 1 : 0);
-        root.setAttribute("data-page-count", String(pageCount));
-    };
-    calcPageCount();
-
-    var updateWidths = function () {
-        sliderItems.forEach(function (item) {
-            item.style.width = itemWidth + "px";
-        });
-    };
-    updateWidths();
-
-    var lastManualDirection = 1;
+    var thumbnailsItem = element(
+        "li",
+        element(
+            "div",
+            [].map.call(rootChildren, function (child, index) {
+                return element(
+                    "div",
+                    child.cloneNode(true),
+                    {
+                        onclick: function () {
+                            if (child.clickable && currentIndex === 0) {
+                                setCurrentIndex(index + pageSize); // why plus `pageSize`? because first element is thumbnails block
+                                makeMove();
+                            } else if (currentIndex > 0) {
+                                setCurrentIndex(0);
+                                makeMove();
+                            }
+                        },
+                        "class": "thumbnail" + (child.clickable ? " clickable" : "")
+                    }
+                );
+            }),
+            {
+                "class": "thumbnails"
+            }
+        ),
+        {
+            style: sliderItemStyle
+        }
+    );
 
     var sliderItemsWrapper = element(
         "ul",
-        sliderItems,
+        null,
         {
             style: style({
                 display: "block",
@@ -176,10 +248,147 @@ function initSlider(root) {
                 overflow: "hidden",
                 margin: 0,
                 padding: 0,
-                border: "none"
+                border: "none",
+                transition: "unset"
             })
         }
     );
+
+    var swipeable = element(
+        "div",
+        sliderItemsWrapper,
+        {
+            style: style({
+                display: "block",
+                position: "relative",
+                width: "100%",
+                overflow: "hidden",
+                margin: 0,
+                padding: 0,
+                border: "none",
+                transition: "unset"
+            }),
+            "class": "swipeable"
+        }
+    );
+
+    var renderSliderItems = function() {
+        sliderItems = (displayThumbnails ? [thumbnailsItem] : []).concat(mainItems);
+        var thumbnailsWidth = displayThumbnails ? (itemWidth * pageSize) : 0;
+        mainItems.forEach(function (item, index) {
+            item.style.left = (thumbnailsWidth + index * itemWidth) + "px";
+        });
+        sliderItemsWrapper.style.width = (thumbnailsWidth + mainItems.length * itemWidth) + "px";
+        empty(sliderItemsWrapper);
+        appendChildren(sliderItemsWrapper, sliderItems);
+    };
+    renderSliderItems();
+
+    var pageCount = 0;
+    var calcPageCount = function () {
+        pageCount = Math.floor(mainItems.length / pageSize);
+        if (mainItems.length % pageSize > 0) {
+            pageCount++;
+        }
+        if (displayThumbnails) {
+            pageCount++;
+        }
+        root.setAttribute("data-page-count", String(pageCount));
+    };
+    calcPageCount();
+
+    var updateWidths = function () {
+        thumbnailsItem.style.width = (itemWidth * pageSize) + "px";
+        mainItems.forEach(function (item) {
+            item.style.width = itemWidth + "px";
+        });
+    };
+    updateWidths();
+
+    var itemAspectRatio, lastItemAspectRatio;
+
+    // the flag variable to check whether window has loaded or not
+    var windowLoaded = false;
+    window.addEventListener("load", function () {
+        windowLoaded = true;
+    });
+
+    var resetHeights = function () {
+        sliderItems.forEach(function (item) {
+            item.style.height = "auto";
+        });
+    };
+
+    var calcItemAspectRatio = function () {
+        lastItemAspectRatio = itemAspectRatio;
+        if (isNaN(parseFloat(itemAspectRatioConf))) {
+            var calcItems;
+            switch (itemAspectRatioConf) {
+                case "adjust-by-page":
+                    var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
+                    calcItems = sliderItems.filter(function (item, index) {
+                        return (thumbnailsDeltaIndex + index >= currentIndex && thumbnailsDeltaIndex + index < currentIndex + pageSize);
+                    });
+                    break;
+                case "adjust-by-all":
+                default:
+                    calcItems = sliderItems;
+            }
+
+            var already = windowLoaded || calcItems.every(function (item) {
+                    return isFinite(item.offsetWidth / item.offsetHeight);
+                });
+
+            if (already) {
+                itemAspectRatio = calcItems.reduce(function (minAspectRatio, item) {
+                    var aspectRatio = item.offsetWidth / item.offsetHeight;
+                    if (item === thumbnailsItem) {
+                        // I don't know why??? but it works
+                        aspectRatio /= pageSize;
+                    }
+                    if (minAspectRatio > aspectRatio) {
+                        return aspectRatio;
+                    }
+                    return minAspectRatio;
+                }, Infinity);
+            } else {
+                itemAspectRatio = Infinity;
+            }
+        } else {
+            itemAspectRatio = parseFloat(itemAspectRatioConf);
+            if (itemAspectRatio <= 0) {
+                throw Error("Item Aspect Ratio must be greater than 0.");
+            }
+        }
+    };
+
+    var updateHeights = function (motionDisabled) {
+        var lastItemHeight = itemWidth / lastItemAspectRatio;
+        var itemHeight = itemWidth / itemAspectRatio;
+        if (motionDisabled || slideTime === 0) {
+            sliderItemsWrapper.style.height = itemHeight + "px";
+            sliderItems.forEach(function (item) {
+                item.style.height = itemHeight + "px";
+            });
+        } else {
+            var speed = getAverageMotionSpeed(itemHeight - lastItemHeight, slideTime / 10);
+            var height = lastItemHeight;
+            var time = 0;
+            var inter = setInterval(function () {
+                height += speed;
+                time += 10;
+                sliderItemsWrapper.style.height = roundDistance(height) + "px";
+                sliderItems.forEach(function (item) {
+                    item.style.height = roundDistance(height) + "px";
+                });
+                if (time === slideTime) {
+                    clearInterval(inter);
+                }
+            }, 10);
+        }
+    };
+
+    var lastManualDirection = 1;
 
     // Buttons
     var prevBtn = element(
@@ -214,7 +423,9 @@ function initSlider(root) {
             margin: 0,
             padding: 0,
             border: "none",
+            overflow: "unset",
             transition: slideTime + "ms",
+            "line-height": 0,
             "white-space": "nowrap"
         })
     });
@@ -236,14 +447,18 @@ function initSlider(root) {
                         padding: 0,
                         border: "none",
                         transition: slideTime + "ms",
+                        "line-height": "normal",
                         "list-style": "none"
                     })
                 }
             );
             navItem.navIndex = i;
             navItem.onclick = function () {
-                updateCurrentIndex(pageSize * this.navIndex);
-                updateItemPositions();
+                if (currentIndex !== pageSize * this.navIndex) {
+                    setCurrentIndex(pageSize * this.navIndex);
+                    makeMove();
+                    scrollIntoView();
+                }
                 lastManualDirection = 0;
             };
             navItems.push(navItem);
@@ -254,13 +469,55 @@ function initSlider(root) {
     renderNavItems();
 
     var currentIndex = 0;
-    var updateCurrentIndex = function (newIndex) {
+    var setCurrentIndex = function (newIndex) {
         if (newIndex < 0 || sliderItems.length < pageSize) {
             newIndex = 0;
-        } else if (newIndex > sliderItems.length - pageSize) {
-            newIndex = sliderItems.length - pageSize;
+        } else if (newIndex > mainItems.length - (displayThumbnails ? 0 : pageSize)) {
+            newIndex = mainItems.length - (displayThumbnails ? 0 : pageSize);
+        } else if (displayThumbnails && newIndex > 0 && newIndex < pageSize) {
+            newIndex = pageSize;
         }
         currentIndex = newIndex;
+    };
+
+    var updateSliderItemPositions = function (motionDisabled) {
+        // positions
+        var container = sliderItemsWrapper;
+        var lastSlideLeft = container.slideLeft || 0;
+        var maxVisualIndex = sliderItems.length - pageSize - previewRight + (displayThumbnails ? 1 : 0);
+        if (currentIndex <= previewLeft) {
+            container.slideLeft = 0;
+        } else if (currentIndex >= maxVisualIndex) {
+            container.slideLeft = itemWidth * (previewLeft - maxVisualIndex);
+        } else {
+            container.slideLeft = itemWidth * (previewLeft - currentIndex);
+        }
+        if (motionDisabled || slideTime === 0) {
+            container.style.left = container.slideLeft + "px";
+        } else {
+            var speed = getAverageMotionSpeed(container.slideLeft - lastSlideLeft, slideTime / 10);
+            var left = 0 + lastSlideLeft;
+            var time = 0;
+            var inter = setInterval(function () {
+                left += speed;
+                time += 10;
+                container.style.left = roundDistance(left) + "px";
+                if (time === slideTime) {
+                    clearInterval(inter);
+                }
+            }, 10);
+        }
+
+        // flag class
+        var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
+        sliderItems.forEach(function (item, index) {
+
+            if (thumbnailsDeltaIndex + index >= currentIndex && thumbnailsDeltaIndex + index < currentIndex + pageSize) {
+                item.classList.add("active");
+            } else {
+                item.classList.remove("active");
+            }
+        });
     };
 
     var updateNavItemPositions = function () {
@@ -314,52 +571,77 @@ function initSlider(root) {
         }
     };
 
-    var updateItemPositions = function () {
-        sliderItems.forEach(function (item, index) {
-            // positions
-            if (currentIndex === 0) {
-                item.translateX = itemWidth * (index - currentIndex);
-            } else if (currentIndex === sliderItems.length - pageSize) {
-                item.translateX = itemWidth * (index - currentIndex + previewLeft + previewRight);
-            } else {
-                item.translateX = itemWidth * (index - currentIndex + previewLeft);
-            }
-            item.style.transform = "translateX(" + item.translateX + "px)";
-
-            // flag class
-            if (index >= currentIndex && index < currentIndex + pageSize) {
-                item.classList.add("active");
-            } else {
-                item.classList.remove("active");
-            }
-        });
-        prevBtn.disabled = currentIndex <= 0;
-        nextBtn.disabled = currentIndex >= sliderItems.length - pageSize;
-        updateNavItemPositions();
+    var scrollIntoView = function () {
+        var rect = root.getBoundingClientRect();
+        var outOfView = (
+            rect.top < 0 ||
+            rect.left < 0 ||
+            rect.bottom > window.innerHeight ||
+            rect.right > window.innerWidth
+        );
+        if (outOfView) {
+            var alignToTop = rect.bottom <= window.innerHeight;
+            root.scrollIntoView(alignToTop);
+        }
     };
 
-    updateItemPositions();
+    var updateArrowsState = function () {
+        prevBtn.disabled = currentIndex <= 0;
+        nextBtn.disabled = currentIndex >= mainItems.length - (displayThumbnails ? 0 : pageSize);
+    };
+
+    var makeMove = function (motionDisabled) {
+        calcWidths();
+        updateWidths();
+        renderSliderItems();
+        resetHeights();
+        calcItemAspectRatio();
+        updateHeights(motionDisabled);
+        updateSliderItemPositions(motionDisabled);
+        updateNavItemPositions();
+        updateArrowsState();
+    };
+
+    makeMove(true);
+
+    // Maybe some items have not loaded
+    if (itemAspectRatio > 0 && isFinite(itemAspectRatio)) {
+        root.classList.add("initialized");
+    } else {
+        // Make an interval to check if that items have loaded as soon as possible
+        var inter = setInterval(function () {
+            makeMove(true);
+            if (windowLoaded || isFinite(itemAspectRatio)) {
+                clearInterval(inter);
+                root.classList.add("initialized");
+            }
+        }, 100);
+    }
+
+    window.addEventListener("load", function () {
+        makeMove(true);
+    });
 
     var prev = function () {
         var d;
         for (d = pageSize; d > 0; d--) {
             if (currentIndex - d >= 0) {
-                updateCurrentIndex(currentIndex - d);
+                setCurrentIndex(currentIndex - d);
                 break;
             }
         }
-        updateItemPositions();
+        makeMove();
     };
 
     var next = function () {
         var d;
         for (d = pageSize; d > 0; d--) {
-            if (currentIndex + d <= sliderItems.length - pageSize) {
-                updateCurrentIndex(currentIndex + d);
+            if (currentIndex + d <= mainItems.length - (displayThumbnails ? 0 : pageSize)) {
+                setCurrentIndex(currentIndex + d);
                 break;
             }
         }
-        updateItemPositions();
+        makeMove();
     };
 
     var autorunPaused = false;
@@ -378,15 +660,15 @@ function initSlider(root) {
                 if (!autorunPaused) {
                     if (lastManualDirection === 1) {
                         if (currentIndex >= sliderItems.length - pageSize) {
-                            updateCurrentIndex(0);
-                            updateItemPositions();
+                            setCurrentIndex(0);
+                            makeMove();
                         } else {
                             next();
                         }
                     } else if (lastManualDirection === -1) {
                         if (currentIndex <= 0) {
-                            updateCurrentIndex(sliderItems.length - pageSize);
-                            updateItemPositions();
+                            setCurrentIndex(sliderItems.length - pageSize);
+                            makeMove();
                         } else {
                             prev();
                         }
@@ -405,12 +687,14 @@ function initSlider(root) {
 
     prevBtn.addEventListener("click", function () {
         prev();
+        scrollIntoView();
         lastManualDirection = -1;
         clearAutorun();
         setTimeout(setAutorun, slideTime);
     });
     nextBtn.addEventListener("click", function () {
         next();
+        scrollIntoView();
         lastManualDirection = 1;
         clearAutorun();
         setTimeout(setAutorun, slideTime);
@@ -421,7 +705,7 @@ function initSlider(root) {
         appendChildren(root, [
             element(
                 "div",
-                displayArrows && pageCount > 1 ? [sliderItemsWrapper, prevBtn, nextBtn] : sliderItemsWrapper,
+                displayArrows && pageCount > 1 ? [swipeable, prevBtn, nextBtn] : swipeable,
                 {
                     style: style({
                         display: "block",
@@ -436,111 +720,33 @@ function initSlider(root) {
             ),
             displayNavigator && pageCount > 1
                 ? element(
-                    "div",
-                    navItemsWrapper,
-                    {
-                        style: style({
-                            display: "block",
-                            position: "relative",
-                            overflow: "hidden"
-                        }),
-                        "class": "slider-nav"
-                    }
-                )
+                "div",
+                navItemsWrapper,
+                {
+                    style: style({
+                        display: "block",
+                        overflow: "hidden"
+                    }),
+                    "class": "slider-nav"
+                }
+            )
                 : null
         ]);
     };
     renderRootContent();
 
-    var itemAspectRatio;
-
-    var resetHeights = function () {
-        sliderItems.forEach(function (item) {
-            item.style.height = "auto";
-        });
-    };
-
-    // the flag variable to check whether window has loaded or not
-    var windowLoaded = false;
-    window.addEventListener("load", function () {
-        windowLoaded = true;
-    });
-
-    var calcItemAspectRatio = function () {
-        var already = windowLoaded || sliderItems.every(function (item) {
-            return isFinite(item.offsetWidth / item.offsetHeight);
-        });
-
-        if (already) {
-            itemAspectRatio = sliderItems.reduce(function (minAspectRatio, item) {
-                var aspectRatio = item.offsetWidth / item.offsetHeight;
-                if (minAspectRatio > aspectRatio) {
-                    return aspectRatio;
-                }
-                return minAspectRatio;
-            }, Infinity);
-        } else {
-            itemAspectRatio = Infinity;
-        }
-    };
-
-    var updateHeights = function () {
-        var itemHeight = itemWidth / itemAspectRatio;
-        sliderItemsWrapper.style.height = itemHeight + "px";
-        sliderItems.forEach(function (item) {
-            item.style.height = itemHeight + "px";
-        });
-    };
-
-    // @TODO: Set height for the slider items
-    resetHeights();
-    calcItemAspectRatio();
-    updateHeights();
-
-    // Maybe some items have not loaded
-    if (itemAspectRatio > 0 && isFinite(itemAspectRatio)) {
-        root.classList.add("initialized");
-    } else {
-        // Make an interval to check if that items have loaded as soon as possible
-        var inter = setInterval(function () {
-            resetHeights();
-            calcItemAspectRatio();
-            updateHeights();
-            if (windowLoaded || isFinite(itemAspectRatio)) {
-                clearInterval(inter);
-                root.classList.add("initialized");
-            }
-        }, 100);
-    }
-
-    var onEndResize;
     window.addEventListener("resize", function () {
-        sliderItems.forEach(function (item) {
-            item.style.transition = "0ms";
-        });
-
         calcViewWidthBasedValues();
+        renderSliderItems();
         calcPageCount();
-        updateCurrentIndex(currentIndex); //normalize index
+        setCurrentIndex(currentIndex); //normalize index
         renderRootContent();
-        
+        renderNavItems();
+
         calcWidths();
         updateWidths();
 
-        resetHeights();
-        calcItemAspectRatio();
-        updateHeights();
-        
-        renderNavItems();
-        updateItemPositions();
-
-        clearTimeout(onEndResize);
-        onEndResize = setTimeout(function() {
-            // Run code here, resizing has "stopped"
-            sliderItems.forEach(function (item) {
-                item.style.transition = slideTime + "ms";
-            });
-        }, 250);
+        makeMove(true);
     });
 
     //TODO: Swipe with hammer js
@@ -553,57 +759,75 @@ function initSlider(root) {
     });
 
     // Use hammer js to detect pan gesture
-    var hammer = new Hammer(sliderItemsWrapper);
+    var hammer = new Hammer(swipeable);
+    var swipeEnabled = true;
     hammer.on("panstart panleft panright panend pancancel", function (event) {
         if (sliderItems.length > pageSize) {
-            sliderItems.forEach(function (item) {
-                switch (event.type) {
-                    case "panstart":
-                        item.style.transition = "0ms";
-                        item.translateX0 = item.translateX;
-                        break;
-                    case "panleft":
-                    case "panright":
-                        item.translateX = item.translateX0 + event.deltaX;
-                        item.style.transform = "translateX(" + item.translateX + "px)";
-                        break;
-                    case "panend":
-                    case "pancancel":
-                        item.style.transition = slideTime + "ms";
-                        break;
-                }
-            });
+            var container = sliderItemsWrapper;
+            switch (event.type) {
+                case "panstart":
+                    var swipeAngle = Math.abs(event.angle);
+                    swipeEnabled = swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle;
 
-            if (/panstart/.test(event.type)) {
-                clearAutorun();
-            }
+                    if (swipeEnabled) {
+                        clearAutorun();
 
-            if (/panend|pancancel/.test(event.type)) {
-                if (event.deltaX !== 0) {
-                    var a = event.deltaX > 0 ? 0.8 : 0.2;
-
-                    // if swipe quickly
-                    if (event.overallVelocityX > 0.5) {
-                        a += 0.2;
-                    } else if (event.overallVelocityX < -0.5) {
-                        a -= 0.2;
+                        // sliderItems.forEach(function (item) {
+                        //     item.slideLeft0 = item.slideLeft;
+                        // });
+                        container.slideLeft0 = container.slideLeft;
                     }
-                    // console.log(event.overallVelocityX, a);
+                    break;
+                case "panleft":
+                case "panright":
+                    if (swipeEnabled) {
+                        // sliderItems.forEach(function (item) {
+                        //     item.slideLeft = item.slideLeft0 + event.deltaX;
+                        //     item.style.left = item.slideLeft + "px";
+                        // });
+                        container.slideLeft = container.slideLeft0 + event.deltaX;
+                        container.style.left = container.slideLeft + "px";
 
-                    var posChange = Math.ceil(- a - event.deltaX / pageWidth) * pageSize;
-                    updateCurrentIndex(currentIndex + posChange);
-                    updateItemPositions();
-
-                    // autorun
-                    if (posChange > 0) {
-                        lastManualDirection = 1;
-                    } else if (posChange < 0) {
-                        lastManualDirection = -1;
-                    } else {
-                        lastManualDirection = 0;
                     }
-                    setTimeout(setAutorun, slideTime);
-                }
+                    break;
+                case "panend":
+                case "pancancel":
+                    if (swipeEnabled) {
+                        // var posChanged = sliderItems.some(function (item) {
+                        //     return item.slideLeft !== item.slideLeft0;
+                        // });
+                        var posChanged = container.slideLeft !== container.slideLeft0;
+                        if (posChanged) {
+                            var a = event.deltaX > 0 ? 0.9 : 0.1;
+
+                            // if swipe quickly
+                            if (event.overallVelocityX > 0.5) {
+                                a += 0.1;
+                            } else if (event.overallVelocityX < -0.5) {
+                                a -= 0.1;
+                            }
+                            // console.log(event.overallVelocityX, a);
+
+                            var deltaIndex = Math.ceil(- a - event.deltaX / pageWidth) * pageSize;
+                            setCurrentIndex(currentIndex + deltaIndex);
+                            makeMove();
+                            if (deltaIndex !== 0) {
+                                scrollIntoView();
+                            }
+                        }
+
+                        // autorun
+                        if (deltaIndex > 0) {
+                            lastManualDirection = 1;
+                        } else if (deltaIndex < 0) {
+                            lastManualDirection = -1;
+                        } else {
+                            lastManualDirection = 0;
+                        }
+                        setTimeout(setAutorun, slideTime);
+                    }
+                    break;
+                default:
             }
         }
     });
