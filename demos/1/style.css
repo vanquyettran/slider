@@ -92,10 +92,10 @@
     width: 100%;
 }
 .slider-item .thumbnail {
-    width: calc(100% / 3);
+    width: calc(100% / 5);
     float: left;
 }
-.slider-item .thumbnail:nth-child(n + 4) { /* display the first 3 elements */
+.slider-item .thumbnail:nth-child(n + 6) { /* display the first n elements */
     display: none;
 }
 
