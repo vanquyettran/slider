@@ -325,42 +325,43 @@ function initSlider(root) {
     });
 
     var calcItemAspectRatio = function () {
-
         lastItemAspectRatio = itemAspectRatio;
         if (isNaN(parseFloat(itemAspectRatioConf))) {
             // clone slider items,
             // we don't use slider item directly
             // because when they change the heights, it will make experience down
-            var clonedThumbnailsItem = displayThumbnails ? thumbnailsItem.cloneNode(true) : [];
-            clonedThumbnailsItem.style.visibility = "hidden";
-            clonedThumbnailsItem.style.height = "auto";
+            var clonedThumbnailsItems = (displayThumbnails ? [thumbnailsItem] : []).map(function (item) {
+                var cloned = item.cloneNode(true);
+                cloned.style.visibility = "hidden";
+                cloned.style.height = "auto";
+                return cloned;
+            });
             var clonedMainItems = mainItems.map(function (item) {
                 var cloned = item.cloneNode(true);
                 cloned.style.visibility = "hidden";
                 cloned.style.height = "auto";
                 return cloned;
             });
-            var clonedSliderItems = [clonedThumbnailsItem].concat(clonedMainItems).map(function (cloned) {
+            var clonedSliderItems = clonedThumbnailsItems.concat(clonedMainItems).map(function (cloned) {
                 sliderItemsWrapper.appendChild(cloned);
                 return cloned;
             });
+
+            // items that we calc aspect ratio from
             var calcItems;
             switch (itemAspectRatioConf) {
-                case "adjust-by-page":
-                    var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
-                    calcItems = clonedSliderItems.filter(function (item, index) {
-                        return (thumbnailsDeltaIndex + index >= currentIndex && thumbnailsDeltaIndex + index < currentIndex + pageSize);
+                case "adjust-by-active-items":
+                    calcItems = clonedSliderItems.filter(function (item) {
+                        return item.classList.contains("active");
                     });
-                    console.log(calcItems);
                     break;
-                case "adjust-by-main":
+                case "adjust-by-typed-items":
                     if (displayThumbnails && currentIndex < pageSize) {
-                        calcItems = [clonedThumbnailsItem];
+                        calcItems = clonedThumbnailsItems;
                     } else {
                         calcItems = clonedMainItems;
                     }
                     break;
-                case "adjust-by-all":
                 default:
                     calcItems = clonedSliderItems;
             }
@@ -386,9 +387,13 @@ function initSlider(root) {
             }
 
             // remove cloned slider items
-            clonedSliderItems.forEach(function (cloned) {
-                cloned.parentNode.removeChild(cloned);
-            });
+            setTimeout(function () {
+                clonedSliderItems.forEach(function (cloned) {
+                    if (cloned.parentNode) {
+                        cloned.parentNode.removeChild(cloned);
+                    }
+                });
+            }, 1000);
         } else {
             itemAspectRatio = parseFloat(itemAspectRatioConf);
             if (itemAspectRatio <= 0) {
@@ -518,6 +523,20 @@ function initSlider(root) {
         currentIndex = newIndex;
     };
 
+    var updateSliderItemActiveStates = function () {
+        // flag class
+        var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
+        sliderItems.forEach(function (item, index) {
+            if (thumbnailsDeltaIndex + index >= currentIndex
+                && thumbnailsDeltaIndex + index < currentIndex + pageSize
+            ) {
+                item.classList.add("active");
+            } else {
+                item.classList.remove("active");
+            }
+        });
+    };
+
     var updateSliderItemPositions = function (motionDisabled) {
         // positions
         var container = sliderItemsWrapper;
@@ -545,18 +564,6 @@ function initSlider(root) {
                 }
             }, 10);
         }
-
-        // flag class
-        var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
-        sliderItems.forEach(function (item, index) {
-            if (thumbnailsDeltaIndex + index >= currentIndex
-                && thumbnailsDeltaIndex + index < currentIndex + pageSize
-            ) {
-                item.classList.add("active");
-            } else {
-                item.classList.remove("active");
-            }
-        });
     };
 
     var updateNavItemPositions = function () {
@@ -640,10 +647,11 @@ function initSlider(root) {
         updateHeights(motionDisabled);
     };
 
-    var isHeightsChangeOnSlide = /adjust-by-page|adjust-by-main/.test(itemAspectRatioConf);
+    var isHeightsChangeOnSlide = /adjust-by-active-items|adjust-by-typed-items/.test(itemAspectRatioConf);
 
     var movingStateTimeout;
     var makeMove = function (motionDisabled) {
+        updateSliderItemActiveStates();
         if (isHeightsChangeOnSlide) {
             updateHeightBasedValues(motionDisabled);
         }
@@ -661,6 +669,7 @@ function initSlider(root) {
 
     updateWidthBasedValues();
     if (!isHeightsChangeOnSlide) {
+        updateSliderItemActiveStates();
         updateHeightBasedValues(true);
     }
     makeMove(true);
