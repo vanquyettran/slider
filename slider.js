@@ -178,8 +178,11 @@ function initSlider(root) {
     var sliderItemStyle = style({
         display: "block",
         position: "absolute",
-        margin: 0,
         padding: 0,
+        margin: 0,
+        top: "unset",
+        bottom: "unset",
+        right: "unset",
         border: "none",
         transition: "unset",
         overflow: "hidden",
@@ -233,7 +236,9 @@ function initSlider(root) {
             }
         ),
         {
-            style: sliderItemStyle
+            style: sliderItemStyle,
+            "data-type": "thumbnails",
+            "class": "slider-item"
         }
     );
 
@@ -313,36 +318,42 @@ function initSlider(root) {
         windowLoaded = true;
     });
 
-    var resetHeights = function () {
-        sliderItems.forEach(function (item) {
-            item.style.height = "auto";
-        });
-    };
-
     var calcItemAspectRatio = function () {
+
         lastItemAspectRatio = itemAspectRatio;
         if (isNaN(parseFloat(itemAspectRatioConf))) {
+            // clone slider items,
+            // we don't use slider item directly
+            // because when they change the heights, it will make experience down
+            var clonedSliderItems = sliderItems.map(function (item) {
+                var cloned = item.cloneNode(true);
+                cloned.style.visibility = "hidden";
+                cloned.style.height = "auto";
+                sliderItemsWrapper.appendChild(cloned);
+                return cloned;
+            });
+
             var calcItems;
             switch (itemAspectRatioConf) {
                 case "adjust-by-page":
                     var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
-                    calcItems = sliderItems.filter(function (item, index) {
+                    calcItems = clonedSliderItems.filter(function (item, index) {
                         return (thumbnailsDeltaIndex + index >= currentIndex && thumbnailsDeltaIndex + index < currentIndex + pageSize);
                     });
                     break;
                 case "adjust-by-all":
                 default:
-                    calcItems = sliderItems;
+                    calcItems = clonedSliderItems;
             }
 
             var already = windowLoaded || calcItems.every(function (item) {
-                    return isFinite(item.offsetWidth / item.offsetHeight);
-                });
+                return isFinite(item.offsetWidth / item.offsetHeight);
+            });
 
             if (already) {
                 itemAspectRatio = calcItems.reduce(function (minAspectRatio, item) {
                     var aspectRatio = item.offsetWidth / item.offsetHeight;
-                    if (item === thumbnailsItem) {
+                    if (item.getAttribute("data-type") === "thumbnails") {
                         // I don't know why??? but it works
                         aspectRatio /= pageSize;
                     }
@@ -354,6 +365,11 @@ function initSlider(root) {
             } else {
                 itemAspectRatio = Infinity;
             }
+
+            // remove cloned slider items
+            clonedSliderItems.forEach(function (cloned) {
+                cloned.parentNode.removeChild(cloned);
+            });
         } else {
             itemAspectRatio = parseFloat(itemAspectRatioConf);
             if (itemAspectRatio <= 0) {
@@ -361,6 +377,9 @@ function initSlider(root) {
             }
         }
     };
+
+    // for the case of exact aspect ratio provided
+    calcItemAspectRatio();
 
     var updateHeights = function (motionDisabled) {
         var lastItemHeight = itemWidth / lastItemAspectRatio;
@@ -484,7 +503,7 @@ function initSlider(root) {
         // positions
         var container = sliderItemsWrapper;
         var lastSlideLeft = container.slideLeft || 0;
-        var maxVisualIndex = sliderItems.length - pageSize - previewRight + (displayThumbnails ? 1 : 0);
+        var maxVisualIndex = mainItems.length - pageSize - previewRight + (displayThumbnails ? 1 : 0);
         if (currentIndex <= previewLeft) {
             container.slideLeft = 0;
         } else if (currentIndex >= maxVisualIndex) {
@@ -511,8 +530,9 @@ function initSlider(root) {
         // flag class
         var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
         sliderItems.forEach(function (item, index) {
-
-            if (thumbnailsDeltaIndex + index >= currentIndex && thumbnailsDeltaIndex + index < currentIndex + pageSize) {
+            if (thumbnailsDeltaIndex + index >= currentIndex
+                && thumbnailsDeltaIndex + index < currentIndex + pageSize
+            ) {
                 item.classList.add("active");
             } else {
                 item.classList.remove("active");
@@ -590,18 +610,38 @@ function initSlider(root) {
         nextBtn.disabled = currentIndex >= mainItems.length - (displayThumbnails ? 0 : pageSize);
     };
 
-    var makeMove = function (motionDisabled) {
+    var updateWidthBasedValues = function () {
         calcWidths();
         updateWidths();
         renderSliderItems();
-        resetHeights();
+    };
+
+    var updateHeightBasedValues = function (motionDisabled) {
         calcItemAspectRatio();
         updateHeights(motionDisabled);
+    };
+
+    var movingStateTimeout;
+    var makeMove = function (motionDisabled) {
+        if (itemAspectRatioConf === "adjust-by-page") {
+            updateHeightBasedValues(motionDisabled);
+        }
         updateSliderItemPositions(motionDisabled);
         updateNavItemPositions();
         updateArrowsState();
+        if (!motionDisabled) {
+            root.classList.add("moving");
+            clearTimeout(movingStateTimeout);
+            movingStateTimeout = setTimeout(function () {
+                root.classList.remove("moving");
+            }, slideTime);
+        }
     };
 
+    updateWidthBasedValues();
+    if (itemAspectRatioConf !== "adjust-by-page") {
+        updateHeightBasedValues(true);
+    }
     makeMove(true);
 
     // Maybe some items have not loaded
@@ -610,7 +650,8 @@ function initSlider(root) {
     } else {
         // Make an interval to check if that items have loaded as soon as possible
         var inter = setInterval(function () {
-            makeMove(true);
+            updateWidthBasedValues();
+            updateHeightBasedValues(true);
             if (windowLoaded || isFinite(itemAspectRatio)) {
                 clearInterval(inter);
                 root.classList.add("initialized");
@@ -619,7 +660,8 @@ function initSlider(root) {
     }
 
     window.addEventListener("load", function () {
-        makeMove(true);
+        updateWidthBasedValues();
+        updateHeightBasedValues(true);
     });
 
     var prev = function () {
@@ -690,14 +732,24 @@ function initSlider(root) {
         scrollIntoView();
         lastManualDirection = -1;
         clearAutorun();
-        setTimeout(setAutorun, slideTime);
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+        setTimeout(function () {
+            updateArrowsState();
+            setAutorun();
+        }, slideTime);
     });
     nextBtn.addEventListener("click", function () {
         next();
         scrollIntoView();
         lastManualDirection = 1;
         clearAutorun();
-        setTimeout(setAutorun, slideTime);
+        nextBtn.disabled = true;
+        nextBtn.disabled = true;
+        setTimeout(function () {
+            updateArrowsState();
+            setAutorun();
+        }, slideTime);
     });
 
     var renderRootContent = function () {
@@ -737,15 +789,12 @@ function initSlider(root) {
 
     window.addEventListener("resize", function () {
         calcViewWidthBasedValues();
-        renderSliderItems();
+        updateWidthBasedValues();
+        updateHeightBasedValues(true);
         calcPageCount();
         setCurrentIndex(currentIndex); //normalize index
         renderRootContent();
         renderNavItems();
-
-        calcWidths();
-        updateWidths();
-
         makeMove(true);
     });
 
