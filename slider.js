@@ -500,7 +500,7 @@ function initSlider(root) {
                 if (currentIndex !== pageSize * this.navIndex) {
                     setCurrentIndex(pageSize * this.navIndex);
                     makeMove();
-                    scrollIntoView();
+                    setTimeout(scrollIntoView, slideTime);
                 }
                 lastManualDirection = 0;
             };
@@ -759,7 +759,6 @@ function initSlider(root) {
 
     prevBtn.addEventListener("click", function () {
         prev();
-        scrollIntoView();
         lastManualDirection = -1;
         clearAutorun();
         prevBtn.disabled = true;
@@ -767,11 +766,11 @@ function initSlider(root) {
         setTimeout(function () {
             updateArrowsState();
             setAutorun();
+            scrollIntoView();
         }, slideTime);
     });
     nextBtn.addEventListener("click", function () {
         next();
-        scrollIntoView();
         lastManualDirection = 1;
         clearAutorun();
         prevBtn.disabled = true;
@@ -779,6 +778,7 @@ function initSlider(root) {
         setTimeout(function () {
             updateArrowsState();
             setAutorun();
+            scrollIntoView();
         }, slideTime);
     });
 
@@ -846,7 +846,7 @@ function initSlider(root) {
             switch (event.type) {
                 case "panstart":
                     var swipeAngle = Math.abs(event.angle);
-                    swipeEnabled = swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle;
+                    swipeEnabled = (swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle) && !root.classList.contains("moving");
 
                     if (swipeEnabled) {
                         clearAutorun();
@@ -864,9 +864,23 @@ function initSlider(root) {
                         //     item.slideLeft = item.slideLeft0 + event.deltaX;
                         //     item.style.left = item.slideLeft + "px";
                         // });
-                        container.slideLeft = container.slideLeft0 + event.deltaX;
+                        var deltaX1 = Math.floor(event.deltaX * 1000) / 1000;
+                        container.slideLeft = container.slideLeft0 + deltaX1;
                         container.style.left = container.slideLeft + "px";
+                        if (deltaX1 !== 0) {
+                            var overallVelocityX1 = Math.floor(event.overallVelocityX * 1000) / 1000;
+                            var a1 = deltaX > 0 ? 0.9 : 0.1;
 
+
+                            // if swipe quickly
+                            if (overallVelocityX > 0.5) {
+                                a1 += 0.1;
+                            } else if (overallVelocityX < -0.5) {
+                                a1 -= 0.1;
+                            }
+
+                            console.log(- a1 - deltaX1 / pageWidth);
+                        }
                     }
                     break;
                 case "panend":
@@ -875,35 +889,39 @@ function initSlider(root) {
                         // var posChanged = sliderItems.some(function (item) {
                         //     return item.slideLeft !== item.slideLeft0;
                         // });
-                        var posChanged = container.slideLeft !== container.slideLeft0;
-                        if (posChanged) {
-                            var a = event.deltaX > 0 ? 0.9 : 0.1;
+                        // var posChanged = container.slideLeft !== container.slideLeft0;
+                        // if (posChanged) {
+                            var deltaX = Math.floor(event.deltaX * 1000) / 1000;
+                            if (deltaX !== 0) {
+                                var overallVelocityX = Math.floor(event.overallVelocityX * 1000) / 1000;
+                                var a = deltaX > 0 ? 0.9 : 0.1;
 
-                            // if swipe quickly
-                            if (event.overallVelocityX > 0.5) {
-                                a += 0.1;
-                            } else if (event.overallVelocityX < -0.5) {
-                                a -= 0.1;
+                                // if swipe quickly
+                                if (overallVelocityX > 0.5) {
+                                    a += 0.1;
+                                } else if (overallVelocityX < -0.5) {
+                                    a -= 0.1;
+                                }
+
+                                var deltaIndex = Math.ceil(- a - deltaX / pageWidth) * pageSize;
+                                if (deltaIndex !== 0) {
+                                    setCurrentIndex(currentIndex + deltaIndex);
+                                    setTimeout(scrollIntoView, slideTime);
+                                }
+                                makeMove();
+
+                                // autorun
+                                if (deltaIndex > 0) {
+                                    lastManualDirection = 1;
+                                } else if (deltaIndex < 0) {
+                                    lastManualDirection = -1;
+                                } else {
+                                    lastManualDirection = 0;
+                                }
+                                setTimeout(setAutorun, slideTime);
                             }
-                            // console.log(event.overallVelocityX, a);
+                        // }
 
-                            var deltaIndex = Math.ceil(- a - event.deltaX / pageWidth) * pageSize;
-                            setCurrentIndex(currentIndex + deltaIndex);
-                            makeMove();
-                            if (deltaIndex !== 0) {
-                                scrollIntoView();
-                            }
-                        }
-
-                        // autorun
-                        if (deltaIndex > 0) {
-                            lastManualDirection = 1;
-                        } else if (deltaIndex < 0) {
-                            lastManualDirection = -1;
-                        } else {
-                            lastManualDirection = 0;
-                        }
-                        setTimeout(setAutorun, slideTime);
                     }
                     break;
                 default:
