@@ -774,7 +774,7 @@ function initSlider(root) {
         scrollIntoView();
         lastManualDirection = 1;
         clearAutorun();
-        nextBtn.disabled = true;
+        prevBtn.disabled = true;
         nextBtn.disabled = true;
         setTimeout(function () {
             updateArrowsState();
