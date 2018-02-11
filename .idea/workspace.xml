@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2bd18c78-4569-4d94-94a3-1bd86ad48199" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/demos/1/index.html" afterPath="$PROJECT_DIR$/demos/1/index.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/slider.js" afterPath="$PROJECT_DIR$/slider.js" />
     </list>
     <ignored path="slider.iws" />
@@ -23,17 +24,17 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="slider.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="slider.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/slider.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="245">
-              <caret line="853" column="35" selection-start-line="853" selection-start-column="35" selection-end-line="853" selection-end-column="35" />
+            <state relative-caret-position="385">
+              <caret line="876" column="39" selection-start-line="876" selection-start-column="39" selection-end-line="876" selection-end-column="39" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/demos/1/index.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="280">
@@ -73,8 +74,8 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/demos/1/style.css" />
-        <option value="$PROJECT_DIR$/demos/1/index.html" />
         <option value="$PROJECT_DIR$/slider.js" />
+        <option value="$PROJECT_DIR$/demos/1/index.html" />
       </list>
     </option>
   </component>
@@ -234,7 +235,7 @@
       <workItem from="1517882405877" duration="2685000" />
       <workItem from="1518151764463" duration="22062000" />
       <workItem from="1518228182383" duration="9914000" />
-      <workItem from="1518317417675" duration="7346000" />
+      <workItem from="1518317417675" duration="7493000" />
     </task>
     <task id="LOCAL-00001" summary="expand">
       <created>1517882462544</created>
@@ -247,7 +248,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="42862000" />
+    <option name="totallyTimeSpent" value="43009000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1376" height="754" extended-state="6" />
@@ -373,18 +374,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/demos/1/index.html">
+    <entry file="file://$PROJECT_DIR$/slider.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="280">
-          <caret line="14" column="31" selection-start-line="14" selection-start-column="31" selection-end-line="14" selection-end-column="31" />
+        <state relative-caret-position="385">
+          <caret line="876" column="39" selection-start-line="876" selection-start-column="39" selection-end-line="876" selection-end-column="39" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/slider.js">
+    <entry file="file://$PROJECT_DIR$/demos/1/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="245">
-          <caret line="853" column="35" selection-start-line="853" selection-start-column="35" selection-end-line="853" selection-end-column="35" />
+        <state relative-caret-position="280">
+          <caret line="14" column="31" selection-start-line="14" selection-start-column="31" selection-end-line="14" selection-end-column="31" />
           <folding />
         </state>
       </provider>

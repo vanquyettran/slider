@@ -853,6 +853,7 @@ function initSlider(root) {
         // console.log(event.type);
         if (sliderItems.length > pageSize) {
             var container = sliderItemsWrapper;
+            var deltaX = Math.floor(event.deltaX * 1000) / 1000;
             switch (event.type) {
                 case "panstart":
                     var swipeAngle = Math.abs(event.angle);
@@ -867,15 +868,13 @@ function initSlider(root) {
                 case "panleft":
                 case "panright":
                     if (swipeEnabled) {
-                        var deltaXi = Math.floor(event.deltaX * 1000) / 1000;
-                        container.slideLeft = container.slideLeft0 + deltaXi;
+                        container.slideLeft = container.slideLeft0 + deltaX;
                         container.style.left = container.slideLeft + "px";
                     }
                     break;
                 case "panend":
                 case "pancancel":
                     if (swipeEnabled) {
-                        var deltaX = Math.floor(event.deltaX * 1000) / 1000;
                         if (deltaX !== 0) {
                             var overallVelocityX = Math.floor(event.overallVelocityX * 1000) / 1000;
                             var a = deltaX > 0 ? 0.9 : 0.1;
