@@ -28,8 +28,8 @@
       <file leaf-file-name="slider.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/slider.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="277">
-              <caret line="897" column="0" selection-start-line="897" selection-start-column="0" selection-end-line="897" selection-end-column="0" />
+            <state relative-caret-position="537">
+              <caret line="668" column="6" selection-start-line="668" selection-start-column="6" selection-end-line="668" selection-end-column="6" />
               <folding />
             </state>
           </provider>
@@ -48,8 +48,8 @@
       <file leaf-file-name="style.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/demos/1/style.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="266">
-              <caret line="82" column="13" selection-start-line="82" selection-start-column="13" selection-end-line="82" selection-end-column="13" />
+            <state relative-caret-position="400">
+              <caret line="20" column="21" selection-start-line="20" selection-start-column="21" selection-end-line="20" selection-end-column="21" />
               <folding>
                 <element signature="e#1123#1528#2" expanded="true" />
                 <element signature="e#1569#1967#2" expanded="true" />
@@ -118,8 +118,8 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -162,7 +162,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="nodejs_interpreter_path" value="C:/Program Files (x86)/nodejs/node" />
-    <property name="last_opened_file_path" value="D:/phpprojects/thuvienyduoc.edu.vn" />
+    <property name="last_opened_file_path" value="D:/phpprojects/atao" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
     <property name="ignore_missing_gitignore" value="true" />
@@ -235,7 +235,8 @@
       <workItem from="1516868777446" duration="855000" />
       <workItem from="1517882405877" duration="2685000" />
       <workItem from="1518151764463" duration="22062000" />
-      <workItem from="1518228182383" duration="9746000" />
+      <workItem from="1518228182383" duration="9914000" />
+      <workItem from="1518317417675" duration="6907000" />
     </task>
     <task id="LOCAL-00001" summary="expand">
       <created>1517882462544</created>
@@ -248,7 +249,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="35348000" />
+    <option name="totallyTimeSpent" value="42423000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1376" height="754" extended-state="6" />
@@ -295,6 +296,33 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/slider.js">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/demos/1/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="280">
+          <caret line="14" column="31" selection-start-line="14" selection-start-column="31" selection-end-line="14" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/demos/1/style.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1640">
+          <caret line="82" column="13" selection-start-line="82" selection-start-column="13" selection-end-line="82" selection-end-column="13" />
+          <folding>
+            <element signature="e#1123#1528#2" expanded="true" />
+            <element signature="e#1569#1967#2" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/slider.js">
+      <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7280">
           <caret line="366" column="13" selection-start-line="366" selection-start-column="13" selection-end-line="366" selection-end-column="13" />
           <folding />
@@ -338,8 +366,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/demos/1/style.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="266">
-          <caret line="82" column="13" selection-start-line="82" selection-start-column="13" selection-end-line="82" selection-end-column="13" />
+        <state relative-caret-position="400">
+          <caret line="20" column="21" selection-start-line="20" selection-start-column="21" selection-end-line="20" selection-end-column="21" />
           <folding>
             <element signature="e#1123#1528#2" expanded="true" />
             <element signature="e#1569#1967#2" expanded="true" />
@@ -357,8 +385,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/slider.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="277">
-          <caret line="897" column="0" selection-start-line="897" selection-start-column="0" selection-end-line="897" selection-end-column="0" />
+        <state relative-caret-position="537">
+          <caret line="668" column="6" selection-start-line="668" selection-start-column="6" selection-end-line="668" selection-end-column="6" />
           <folding />
         </state>
       </provider>
