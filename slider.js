@@ -659,7 +659,8 @@ function initSlider(root) {
             updateSliderItemPositions(motionDisabled);
             updateNavItemPositions();
             updateArrowsState();
-        } else {
+        }
+        if (!motionDisabled) {
             root.classList.add("moving");
             clearTimeout(movingStateTimeout);
             movingStateTimeout = setTimeout(function () {
@@ -849,7 +850,7 @@ function initSlider(root) {
     var hammer = new Hammer(swipeable);
     var swipeEnabled = true;
     hammer.on("panstart panleft panright panend pancancel", function (event) {
-        console.log(event.type);
+        // console.log(event.type);
         if (sliderItems.length > pageSize) {
             var container = sliderItemsWrapper;
             switch (event.type) {
