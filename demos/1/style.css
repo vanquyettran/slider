@@ -80,6 +80,7 @@
     opacity: 0.5;
 }
 .slider.moving .slider-item,
+.slider.dragging .slider-item,
 .slider-item.active {
     opacity: 1;
 }
@@ -109,7 +110,7 @@ body {
     background-color: #333;
 }
 .container {
-    width: calc(100% - 6rem);
+    width: 100%;
     margin: auto;
     overflow: hidden;
     position: relative;

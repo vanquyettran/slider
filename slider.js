@@ -642,9 +642,25 @@ function initSlider(root) {
         renderSliderItems();
     };
 
-    var updateHeightBasedValues = function (motionDisabled) {
+    var updateHeightBasedValues = function (motionDisabled, callback) {
         calcItemAspectRatio();
-        updateHeights(motionDisabled);
+        if (isFinite(itemAspectRatio)) {
+            updateHeights(motionDisabled);
+            if ("function" === typeof callback) {
+                callback();
+            }
+        } else {
+            var inter = setInterval(function () {
+                calcItemAspectRatio();
+                if (isFinite(itemAspectRatio)) {
+                    clearInterval(inter);
+                    updateHeights(motionDisabled);
+                    if ("function" === typeof callback) {
+                        callback();
+                    }
+                }
+            }, 10);
+        }
     };
 
     var isHeightsChangeOnSlide = /adjust-by-active-items|adjust-by-typed-items/.test(itemAspectRatioConf);
@@ -654,11 +670,16 @@ function initSlider(root) {
         if (motionDisabled || !root.classList.contains("moving")) {
             updateSliderItemActiveStates();
             if (isHeightsChangeOnSlide) {
-                updateHeightBasedValues(motionDisabled);
+                updateHeightBasedValues(motionDisabled, function () {
+                    updateSliderItemPositions(motionDisabled);
+                    updateNavItemPositions();
+                    updateArrowsState();
+                });
+            } else {
+                updateSliderItemPositions(motionDisabled);
+                updateNavItemPositions();
+                updateArrowsState();
             }
-            updateSliderItemPositions(motionDisabled);
-            updateNavItemPositions();
-            updateArrowsState();
         }
         if (!motionDisabled) {
             root.classList.add("moving");
@@ -669,32 +690,20 @@ function initSlider(root) {
         }
     };
 
+    updateSliderItemActiveStates();
     updateWidthBasedValues();
-    if (!isHeightsChangeOnSlide) {
-        updateSliderItemActiveStates();
-        updateHeightBasedValues(true);
-    }
-    makeMove(true);
 
-    // Maybe some items have not loaded
-    if (itemAspectRatio > 0 && isFinite(itemAspectRatio)) {
-        root.classList.add("initialized");
-    } else {
-        // Make an interval to check if that items have loaded as soon as possible
-        var inter = setInterval(function () {
-            updateWidthBasedValues();
-            updateHeightBasedValues(true);
-            if (windowLoaded || isFinite(itemAspectRatio)) {
-                clearInterval(inter);
-                root.classList.add("initialized");
-            }
-        }, 100);
-    }
+    var _init = function () {
+        updateHeightBasedValues(true, function () {
+            updateSliderItemPositions(true);
+            updateNavItemPositions();
+            updateArrowsState();
+            root.classList.add("initialized");
+        });
+    };
 
-    window.addEventListener("load", function () {
-        updateWidthBasedValues();
-        updateHeightBasedValues(true);
-    });
+    _init();
+    window.addEventListener("load", _init);
 
     var prev = function () {
         var d;
@@ -822,19 +831,21 @@ function initSlider(root) {
     window.addEventListener("resize", function () {
         calcViewWidthBasedValues();
         updateWidthBasedValues();
-        updateHeightBasedValues(true);
-        var inter = setInterval(function () {
-            if (!isFinite(itemAspectRatio)) {
-                updateHeightBasedValues(true);
-            } else {
-                clearInterval(inter);
+        if (isHeightsChangeOnSlide) {
+            calcPageCount();
+            setCurrentIndex(currentIndex); //normalize index
+            renderRootContent();
+            renderNavItems();
+            makeMove(true);
+        } else {
+            updateHeightBasedValues(true, function () {
                 calcPageCount();
                 setCurrentIndex(currentIndex); //normalize index
                 renderRootContent();
                 renderNavItems();
                 makeMove(true);
-            }
-        }, 10);
+            });
+        }
     });
 
     //TODO: Swipe with hammer js
@@ -867,43 +878,43 @@ function initSlider(root) {
                     break;
                 case "panleft":
                 case "panright":
-                    if (swipeEnabled) {
+                    if (swipeEnabled && deltaX !== 0) {
+                        root.classList.add("dragging");
                         container.slideLeft = container.slideLeft0 + deltaX;
                         container.style.left = container.slideLeft + "px";
                     }
                     break;
                 case "panend":
                 case "pancancel":
-                    if (swipeEnabled) {
-                        if (deltaX !== 0) {
-                            var overallVelocityX = Math.floor(event.overallVelocityX * 1000) / 1000;
-                            var a = deltaX > 0 ? 0.9 : 0.1;
+                    if (swipeEnabled && deltaX !== 0) {
+                        root.classList.remove("dragging");
+                        var overallVelocityX = Math.floor(event.overallVelocityX * 1000) / 1000;
+                        var a = deltaX > 0 ? 0.9 : 0.1;
 
-                            // if swipe quickly
-                            // console.log(overallVelocityX);
-                            if (overallVelocityX > 0.5) {
-                                a += 0.1;
-                            } else if (overallVelocityX < -0.5) {
-                                a -= 0.1;
-                            }
-
-                            var deltaIndex = Math.ceil(- a - deltaX / pageWidth) * pageSize;
-                            if (deltaIndex !== 0) {
-                                setCurrentIndex(currentIndex + deltaIndex);
-                                setTimeout(scrollIntoView, slideTime);
-                            }
-                            makeMove();
-
-                            // autorun
-                            if (deltaIndex > 0) {
-                                lastManualDirection = 1;
-                            } else if (deltaIndex < 0) {
-                                lastManualDirection = -1;
-                            } else {
-                                lastManualDirection = 0;
-                            }
-                            setTimeout(setAutorun, slideTime);
+                        // if swipe quickly
+                        // console.log(overallVelocityX);
+                        if (overallVelocityX > 0.5) {
+                            a += 0.1;
+                        } else if (overallVelocityX < -0.5) {
+                            a -= 0.1;
                         }
+
+                        var deltaIndex = Math.ceil(- a - deltaX / pageWidth) * pageSize;
+                        if (deltaIndex !== 0) {
+                            setCurrentIndex(currentIndex + deltaIndex);
+                            setTimeout(scrollIntoView, slideTime);
+                        }
+                        makeMove();
+
+                        // autorun
+                        if (deltaIndex > 0) {
+                            lastManualDirection = 1;
+                        } else if (deltaIndex < 0) {
+                            lastManualDirection = -1;
+                        } else {
+                            lastManualDirection = 0;
+                        }
+                        setTimeout(setAutorun, slideTime);
                     }
                     break;
                 default:
