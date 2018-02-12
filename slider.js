@@ -54,8 +54,6 @@ function initSlider(root) {
     var displayNavigatorMedium = root.getAttribute("data-display-navigator-medium");
     var displayNavigatorSmall = root.getAttribute("data-display-navigator-small");
 
-    var displayNavigatorPageNumber = root.getAttribute("data-display-navigator-page-number") === "true";
-
     // swipe angle max
     var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 45;
 
@@ -481,7 +479,7 @@ function initSlider(root) {
         for (i = 0; i < pageCount; i++) {
             var navItem = element(
                 "li",
-                element("span", displayNavigatorPageNumber ? i + 1 : null),
+                element("span", null),
                 {
                     style: style({
                         display: "inline-block",
