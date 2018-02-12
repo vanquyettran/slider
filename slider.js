@@ -689,9 +689,9 @@ function initSlider(root) {
     };
 
     updateSliderItemActiveStates();
-    updateWidthBasedValues();
 
     var _init = function () {
+        updateWidthBasedValues();
         updateHeightBasedValues(true, function () {
             updateSliderItemPositions(true);
             updateNavItemPositions();
@@ -828,19 +828,15 @@ function initSlider(root) {
 
     window.addEventListener("resize", function () {
         calcViewWidthBasedValues();
+        calcPageCount();
+        setCurrentIndex(currentIndex); //normalize index
+        renderRootContent();
+        renderNavItems();
         updateWidthBasedValues();
         if (isHeightsChangeOnSlide) {
-            calcPageCount();
-            setCurrentIndex(currentIndex); //normalize index
-            renderRootContent();
-            renderNavItems();
             makeMove(true);
         } else {
             updateHeightBasedValues(true, function () {
-                calcPageCount();
-                setCurrentIndex(currentIndex); //normalize index
-                renderRootContent();
-                renderNavItems();
                 makeMove(true);
             });
         }
