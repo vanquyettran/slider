@@ -866,53 +866,55 @@ function initSlider(root) {
             switch (event.type) {
                 case "panstart":
                     var swipeAngle = Math.abs(event.angle);
-                    swipeEnabled = !root.classList.contains("moving")
-                        && (swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle);
+                    swipeEnabled = (swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle)
+                        && !root.classList.contains("moving");
 
                     if (swipeEnabled) {
-                        clearAutorun();
+                        root.classList.add("dragging");
                         container.slideLeft0 = container.slideLeft;
+                        clearAutorun();
                     }
                     break;
                 case "panleft":
                 case "panright":
                     if (swipeEnabled && deltaX !== 0) {
-                        root.classList.add("dragging");
                         container.slideLeft = container.slideLeft0 + deltaX;
                         container.style.left = container.slideLeft + "px";
                     }
                     break;
                 case "panend":
                 case "pancancel":
-                    if (swipeEnabled && deltaX !== 0) {
+                    if (swipeEnabled) {
                         root.classList.remove("dragging");
-                        var overallVelocityX = Math.floor(event.overallVelocityX * 1000) / 1000;
-                        var a = deltaX > 0 ? 0.9 : 0.1;
+                        if (deltaX !== 0) {
+                            var overallVelocityX = Math.floor(event.overallVelocityX * 1000) / 1000;
+                            var a = deltaX > 0 ? 0.9 : 0.1;
 
-                        // if swipe quickly
-                        // console.log(overallVelocityX);
-                        if (overallVelocityX > 0.5) {
-                            a += 0.1;
-                        } else if (overallVelocityX < -0.5) {
-                            a -= 0.1;
-                        }
+                            // if swipe quickly
+                            // console.log(overallVelocityX);
+                            if (overallVelocityX > 0.5) {
+                                a += 0.1;
+                            } else if (overallVelocityX < -0.5) {
+                                a -= 0.1;
+                            }
 
-                        var deltaIndex = Math.ceil(- a - deltaX / pageWidth) * pageSize;
-                        if (deltaIndex !== 0) {
-                            setCurrentIndex(currentIndex + deltaIndex);
-                            setTimeout(scrollIntoView, slideTime);
-                        }
-                        makeMove();
+                            var deltaIndex = Math.ceil(- a - deltaX / pageWidth) * pageSize;
+                            if (deltaIndex !== 0) {
+                                setCurrentIndex(currentIndex + deltaIndex);
+                                setTimeout(scrollIntoView, slideTime);
+                            }
+                            makeMove();
 
-                        // autorun
-                        if (deltaIndex > 0) {
-                            lastManualDirection = 1;
-                        } else if (deltaIndex < 0) {
-                            lastManualDirection = -1;
-                        } else {
-                            lastManualDirection = 0;
+                            // autorun
+                            if (deltaIndex > 0) {
+                                lastManualDirection = 1;
+                            } else if (deltaIndex < 0) {
+                                lastManualDirection = -1;
+                            } else {
+                                lastManualDirection = 0;
+                            }
+                            setTimeout(setAutorun, slideTime);
                         }
-                        setTimeout(setAutorun, slideTime);
                     }
                     break;
                 default:
