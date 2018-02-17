@@ -57,7 +57,12 @@ function initSlider(root) {
     // swipe angle max
     var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 45;
 
+    // item aspect ratio
     var itemAspectRatioConf = root.getAttribute("data-item-aspect-ratio");
+
+    // reserve && repeat
+    var repeatAtFirst = root.getAttribute("data-repeat-at-first") === "true";
+    var repeatAtLast = root.getAttribute("data-repeat-at-last") === "true";
 
     //TODO: Handle errors
 
@@ -85,16 +90,24 @@ function initSlider(root) {
     ) {
         throw Error("Previews must be the numbers are not less than 0.");
     }
-    if (!isNaN(slideTime) && slideTime < 0) {
-        throw Error("Slide time must be an integer is not less than 0.");
-    } else if (slideTime % 10 !== 0) {
-        throw Error("Slide time must be the multiple of 10.");
+    if (!isNaN(slideTime)) {
+        if (slideTime < 0) {
+            throw Error("Slide time must be an integer is not less than 0.");
+        }
+        if (slideTime % 10 !== 0) {
+            throw Error("Slide time must be the multiple of 10.");
+        }
     }
-    if (!isNaN(autorunDelay) && autorunDelay < 100) {
-        throw Error("Autorun delay must be an integer is is not less than 100.");
+    if (!isNaN(autorunDelay)) {
+        if (autorunDelay < 500) {
+            throw Error("Autorun delay must be an integer is not less than 500.");
+        }
+        if (autorunDelay % 10 !== 0) {
+            throw Error("Autorun delay must be the multiple of 10.");
+        }
     }
     if (maxSwipeAngle > 90 || maxSwipeAngle < 0) {
-        throw Error("Max swipe angle mus be in the range [0, 90]");
+        throw Error("Max swipe angle must be in the range [0, 90]");
     }
 
     //TODO: Main code
@@ -429,7 +442,7 @@ function initSlider(root) {
         }
     };
 
-    var lastManualDirection = 1;
+    var lastManualDirection = displayThumbnails ? 0 : 1;
 
     // Buttons
     var prevBtn = element(
@@ -511,10 +524,21 @@ function initSlider(root) {
 
     var currentIndex = 0;
     var setCurrentIndex = function (newIndex) {
-        if (newIndex < 0 || sliderItems.length < pageSize) {
+        var lastIndex = mainItems.length - (displayThumbnails ? 0 : pageSize);
+        if (sliderItems.length < pageSize) {
             newIndex = 0;
-        } else if (newIndex > mainItems.length - (displayThumbnails ? 0 : pageSize)) {
-            newIndex = mainItems.length - (displayThumbnails ? 0 : pageSize);
+        } else if (newIndex < 0) {
+            if (currentIndex === 0 && repeatAtFirst) {
+                newIndex = lastIndex;
+            } else {
+                newIndex = 0;
+            }
+        } else if (newIndex > lastIndex) {
+            if (currentIndex === lastIndex && repeatAtLast) {
+                newIndex = 0;
+            } else {
+                newIndex = lastIndex;
+            }
         } else if (displayThumbnails && newIndex > 0 && newIndex < pageSize) {
             newIndex = pageSize;
         }
@@ -630,8 +654,9 @@ function initSlider(root) {
     };
 
     var updateArrowsState = function () {
-        prevBtn.disabled = currentIndex <= 0;
-        nextBtn.disabled = currentIndex >= mainItems.length - (displayThumbnails ? 0 : pageSize);
+        var lastIndex = mainItems.length - (displayThumbnails ? 0 : pageSize);
+        prevBtn.disabled = currentIndex < 0 || (!repeatAtFirst && currentIndex === 0);
+        nextBtn.disabled = currentIndex > lastIndex || (!repeatAtLast && currentIndex === lastIndex);
     };
 
     var updateWidthBasedValues = function () {
@@ -704,24 +729,12 @@ function initSlider(root) {
     window.addEventListener("load", _init);
 
     var prev = function () {
-        var d;
-        for (d = pageSize; d > 0; d--) {
-            if (currentIndex - d >= 0) {
-                setCurrentIndex(currentIndex - d);
-                break;
-            }
-        }
+        setCurrentIndex(currentIndex - pageSize);
         makeMove();
     };
 
     var next = function () {
-        var d;
-        for (d = pageSize; d > 0; d--) {
-            if (currentIndex + d <= mainItems.length - (displayThumbnails ? 0 : pageSize)) {
-                setCurrentIndex(currentIndex + d);
-                break;
-            }
-        }
+        setCurrentIndex(currentIndex + pageSize);
         makeMove();
     };
 
@@ -739,16 +752,18 @@ function initSlider(root) {
         if (!isNaN(autorunDelay) && autorun === null) {
             autorun = setInterval(function () {
                 if (!autorunPaused) {
+                    var mainFirstIndex = displayThumbnails ? pageSize : 0;
+                    var lastIndex = mainItems.length - (displayThumbnails ? 0 : pageSize);
                     if (lastManualDirection === 1) {
-                        if (currentIndex >= sliderItems.length - pageSize) {
-                            setCurrentIndex(0);
+                        if (currentIndex >= lastIndex) {
+                            setCurrentIndex(mainFirstIndex);
                             makeMove();
                         } else {
                             next();
                         }
                     } else if (lastManualDirection === -1) {
-                        if (currentIndex <= 0) {
-                            setCurrentIndex(sliderItems.length - pageSize);
+                        if (currentIndex <= mainFirstIndex) {
+                            setCurrentIndex(lastIndex);
                             makeMove();
                         } else {
                             prev();
@@ -768,7 +783,11 @@ function initSlider(root) {
 
     prevBtn.addEventListener("click", function () {
         prev();
-        lastManualDirection = -1;
+        if (displayThumbnails && currentIndex < pageSize) {
+            lastManualDirection = 0;
+        } else {
+            lastManualDirection = -1;
+        }
         clearAutorun();
         prevBtn.disabled = true;
         nextBtn.disabled = true;
@@ -780,7 +799,11 @@ function initSlider(root) {
     });
     nextBtn.addEventListener("click", function () {
         next();
-        lastManualDirection = 1;
+        if (displayThumbnails && currentIndex < pageSize) {
+            lastManualDirection = 0;
+        } else {
+            lastManualDirection = 1;
+        }
         clearAutorun();
         prevBtn.disabled = true;
         nextBtn.disabled = true;
@@ -902,12 +925,16 @@ function initSlider(root) {
                             makeMove();
 
                             // autorun
-                            if (deltaIndex > 0) {
-                                lastManualDirection = 1;
-                            } else if (deltaIndex < 0) {
-                                lastManualDirection = -1;
-                            } else {
+                            if (displayThumbnails && currentIndex < pageSize) {
                                 lastManualDirection = 0;
+                            } else {
+                                if (deltaIndex > 0) {
+                                    lastManualDirection = 1;
+                                } else if (deltaIndex < 0) {
+                                    lastManualDirection = -1;
+                                } else {
+                                    lastManualDirection = 0;
+                                }
                             }
                             setTimeout(setAutorun, slideTime);
                         }
