@@ -9,7 +9,7 @@
     width: auto;
     height: auto;
     max-width: 100%;
-    max-height: 100%;
+    max-height: 70vh;
 }
 .slider-body ul li .inner {
     padding: 0 0.5rem;
@@ -18,7 +18,6 @@
     justify-content: center;
     width: 100%;
     height: 100%;
-    max-height: 80vh;
 }
 .slider-prev,
 .slider-next {
