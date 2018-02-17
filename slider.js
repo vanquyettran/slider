@@ -502,12 +502,14 @@ function initSlider(root) {
             );
             navItem.navIndex = i;
             navItem.onclick = function () {
-                if (currentIndex !== pageSize * this.navIndex) {
-                    setCurrentIndex(pageSize * this.navIndex);
-                    makeMove();
-                    setTimeout(scrollIntoView, slideTime);
+                if (!getIsMoving()) {
+                    if (currentIndex !== pageSize * this.navIndex) {
+                        setCurrentIndex(pageSize * this.navIndex);
+                        makeMove();
+                        setTimeout(scrollIntoView, slideTime);
+                    }
+                    lastManualDirection = 0;
                 }
-                lastManualDirection = 0;
             };
             navItems.push(navItem);
         }
@@ -680,11 +682,21 @@ function initSlider(root) {
         }
     };
 
-    var isHeightsChangeOnSlide = /adjust-by-active-items|adjust-by-typed-items/.test(itemAspectRatioConf);
 
-    var movingStateTimeout;
+    var setMovingState = function () {
+        root.classList.add("moving");
+    };
+    var clearMovingState = function () {
+        root.classList.remove("moving");
+    };
+    var getIsMoving = function () {
+        return root.classList.contains("moving");
+    };
+
+    var movingStateClearer;
+    var isHeightsChangeOnSlide = /adjust-by-active-items|adjust-by-typed-items/.test(itemAspectRatioConf);
     var makeMove = function (motionDisabled) {
-        if (motionDisabled || !root.classList.contains("moving")) {
+        if (motionDisabled || !getIsMoving()) {
             updateSliderItemActiveStates();
             if (isHeightsChangeOnSlide) {
                 updateHeightBasedValues(motionDisabled, function () {
@@ -699,10 +711,10 @@ function initSlider(root) {
             }
         }
         if (!motionDisabled) {
-            root.classList.add("moving");
-            clearTimeout(movingStateTimeout);
-            movingStateTimeout = setTimeout(function () {
-                root.classList.remove("moving");
+            setMovingState();
+            // clearTimeout(movingStateTimeout);
+            movingStateClearer = setTimeout(function () {
+                clearMovingState();
             }, slideTime);
         }
     };
@@ -776,36 +788,34 @@ function initSlider(root) {
     setAutorun();
 
     prevBtn.addEventListener("click", function () {
-        prev();
-        if (displayThumbnails && currentIndex < pageSize) {
-            lastManualDirection = 0;
-        } else {
-            lastManualDirection = -1;
+        if (!getIsMoving()) {
+            prev();
+            if (displayThumbnails && currentIndex < pageSize) {
+                lastManualDirection = 0;
+            } else {
+                lastManualDirection = -1;
+            }
+            clearAutorun();
+            setTimeout(function () {
+                setAutorun();
+                scrollIntoView();
+            }, slideTime);
         }
-        clearAutorun();
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-        setTimeout(function () {
-            updateArrowsState();
-            setAutorun();
-            scrollIntoView();
-        }, slideTime);
     });
     nextBtn.addEventListener("click", function () {
-        next();
-        if (displayThumbnails && currentIndex < pageSize) {
-            lastManualDirection = 0;
-        } else {
-            lastManualDirection = 1;
+        if (!getIsMoving()) {
+            next();
+            if (displayThumbnails && currentIndex < pageSize) {
+                lastManualDirection = 0;
+            } else {
+                lastManualDirection = 1;
+            }
+            clearAutorun();
+            setTimeout(function () {
+                setAutorun();
+                scrollIntoView();
+            }, slideTime);
         }
-        clearAutorun();
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-        setTimeout(function () {
-            updateArrowsState();
-            setAutorun();
-            scrollIntoView();
-        }, slideTime);
     });
 
     var renderRootContent = function () {
@@ -880,7 +890,7 @@ function initSlider(root) {
                 case "panstart":
                     var swipeAngle = Math.abs(event.angle);
                     swipeEnabled = (swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle)
-                        && !root.classList.contains("moving");
+                        && !getIsMoving();
 
                     if (swipeEnabled) {
                         root.classList.add("dragging");
