@@ -450,9 +450,6 @@ function initSlider(root) {
         null,
         {
             type: "button",
-            style: style({
-                transition: slideTime + "ms"
-            }),
             "class": "slider-prev"
         }
     );
@@ -461,9 +458,6 @@ function initSlider(root) {
         null,
         {
             type: "button",
-            style: style({
-                transition: slideTime + "ms"
-            }),
             "class": "slider-next"
         }
     );
@@ -834,16 +828,16 @@ function initSlider(root) {
             ),
             displayNavigator && pageCount > 1
                 ? element(
-                "div",
-                navItemsWrapper,
-                {
-                    style: style({
-                        display: "block",
-                        overflow: "hidden"
-                    }),
-                    "class": "slider-nav"
-                }
-            )
+                    "div",
+                    navItemsWrapper,
+                    {
+                        style: style({
+                            display: "block",
+                            overflow: "hidden"
+                        }),
+                        "class": "slider-nav"
+                    }
+                )
                 : null
         ]);
     };
