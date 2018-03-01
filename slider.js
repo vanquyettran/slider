@@ -638,10 +638,10 @@ function initSlider(root) {
     var scrollIntoView = function () {
         var rect = root.getBoundingClientRect();
         var outOfView = (
-            rect.top < 0 ||
-            rect.left < 0 ||
-            rect.bottom > window.innerHeight ||
-            rect.right > window.innerWidth
+            rect.top < 0
+            // || rect.left < 0
+            || rect.bottom > window.innerHeight
+            // || rect.right > window.innerWidth
         );
         if (outOfView) {
             var alignToTop = rect.height > window.innerHeight || rect.bottom <= window.innerHeight;
