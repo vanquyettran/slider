@@ -196,7 +196,7 @@ function initSlider(root) {
         right: "unset",
         border: "none",
         transition: "unset",
-        overflow: "hidden",
+        overflow: "unset",
         "list-style": "none"
     });
 
@@ -267,7 +267,7 @@ function initSlider(root) {
                 display: "block",
                 position: "relative",
                 width: "100%",
-                overflow: "hidden",
+                overflow: "unset",
                 margin: 0,
                 padding: 0,
                 border: "none",
@@ -284,7 +284,7 @@ function initSlider(root) {
                 display: "block",
                 position: "relative",
                 width: "100%",
-                overflow: "hidden",
+                overflow: "unset",
                 margin: 0,
                 padding: 0,
                 border: "none",
@@ -843,7 +843,7 @@ function initSlider(root) {
                     {
                         style: style({
                             display: "block",
-                            overflow: "hidden"
+                            overflow: "unset"
                         }),
                         "class": "slider-nav"
                     }
