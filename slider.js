@@ -643,7 +643,7 @@ function initSlider(root) {
             rect.bottom > window.innerHeight ||
             rect.right > window.innerWidth
         );
-        if (outOfView) {
+        if (outOfView && rect.height <= window.innerHeight) {
             var alignToTop = rect.height > window.innerHeight || rect.bottom <= window.innerHeight;
             root.scrollIntoView(alignToTop);
         }
