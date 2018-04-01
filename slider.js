@@ -196,7 +196,7 @@ function initSlider(root) {
         right: "unset",
         border: "none",
         transition: "unset",
-        overflow: "hidden",
+        overflow: "unset",
         "list-style": "none"
     });
 
@@ -267,7 +267,7 @@ function initSlider(root) {
                 display: "block",
                 position: "relative",
                 width: "100%",
-                overflow: "hidden",
+                overflow: "unset",
                 margin: 0,
                 padding: 0,
                 border: "none",
@@ -284,7 +284,7 @@ function initSlider(root) {
                 display: "block",
                 position: "relative",
                 width: "100%",
-                overflow: "hidden",
+                overflow: "unset",
                 margin: 0,
                 padding: 0,
                 border: "none",
@@ -638,10 +638,10 @@ function initSlider(root) {
     var scrollIntoView = function () {
         var rect = root.getBoundingClientRect();
         var outOfView = (
-            rect.top < 0 ||
-            rect.left < 0 ||
-            rect.bottom > window.innerHeight ||
-            rect.right > window.innerWidth
+            rect.top < 0
+            // || rect.left < 0
+            || rect.bottom > window.innerHeight
+            // || rect.right > window.innerWidth
         );
         if (outOfView && rect.height <= window.innerHeight) {
             var alignToTop = rect.height > window.innerHeight || rect.bottom <= window.innerHeight;
@@ -843,7 +843,7 @@ function initSlider(root) {
                     {
                         style: style({
                             display: "block",
-                            overflow: "hidden"
+                            overflow: "unset"
                         }),
                         "class": "slider-nav"
                     }
