@@ -55,7 +55,7 @@ function initSlider(root) {
     var displayNavigatorSmall = root.getAttribute("data-display-navigator-small");
 
     // swipe angle max
-    var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 45;
+    var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 90;
 
     // item aspect ratio
     var itemAspectRatioConf = root.getAttribute("data-item-aspect-ratio");
