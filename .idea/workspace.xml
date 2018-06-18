@@ -27,8 +27,13 @@
       <file leaf-file-name="slider.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/slider.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="57" column="83" selection-start-line="57" selection-start-column="83" selection-end-line="57" selection-end-column="83" />
+<<<<<<< HEAD
+            <state relative-caret-position="442">
+              <caret line="640" column="27" selection-start-line="640" selection-start-column="27" selection-end-line="640" selection-end-column="27" />
+=======
+            <state relative-caret-position="285">
+              <caret line="289" column="31" selection-start-line="289" selection-start-column="31" selection-end-line="289" selection-end-column="31" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
               <folding />
             </state>
           </provider>
@@ -37,13 +42,34 @@
       <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/demos/1/index.html">
           <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
+            <state relative-caret-position="338">
+              <caret line="13" column="36" selection-start-line="13" selection-start-column="36" selection-end-line="13" selection-end-column="36" />
+=======
             <state relative-caret-position="460">
               <caret line="23" column="39" selection-start-line="23" selection-start-column="39" selection-end-line="23" selection-end-column="39" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
               <folding />
             </state>
           </provider>
         </entry>
       </file>
+<<<<<<< HEAD
+      <file leaf-file-name="style.css" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/demos/1/style.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="338">
+              <caret line="13" column="27" selection-start-line="13" selection-start-column="27" selection-end-line="13" selection-end-column="27" />
+              <folding>
+                <element signature="e#1101#1506#2" expanded="true" />
+                <element signature="e#1547#1945#2" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+=======
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
       <file leaf-file-name="style.css" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/demos/1/style.css">
           <provider selected="true" editor-type-id="text-editor">
@@ -72,8 +98,13 @@
       <list>
         <option value="$PROJECT_DIR$/demos/2/index.html" />
         <option value="$PROJECT_DIR$/demos/2/style.css" />
+<<<<<<< HEAD
+        <option value="$PROJECT_DIR$/demos/1/index.html" />
+        <option value="$PROJECT_DIR$/demos/1/style.css" />
+=======
         <option value="$PROJECT_DIR$/demos/1/style.css" />
         <option value="$PROJECT_DIR$/demos/1/index.html" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
         <option value="$PROJECT_DIR$/slider.js" />
       </list>
     </option>
@@ -116,7 +147,13 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+<<<<<<< HEAD
       <pane id="Scope" />
+      <pane id="Scratches" />
+=======
+      <pane id="Scratches" />
+      <pane id="Scope" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -169,12 +206,11 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="nodejs_interpreter_path" value="C:/Program Files (x86)/nodejs/node" />
-    <property name="last_opened_file_path" value="D:/phpprojects/veneto.v2" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files\nodejs\node.exe" />
     <property name="ignore_missing_gitignore" value="true" />
@@ -255,13 +291,15 @@
       <workItem from="1518588933675" duration="696000" />
       <workItem from="1518661641599" duration="885000" />
       <workItem from="1518833231771" duration="8007000" />
+<<<<<<< HEAD
+      <workItem from="1518866242225" duration="6354000" />
+      <workItem from="1522586789494" duration="117000" />
+=======
       <workItem from="1518866242225" duration="5752000" />
       <workItem from="1519177225614" duration="4715000" />
       <workItem from="1519869476424" duration="479000" />
-      <workItem from="1519872141371" duration="1774000" />
-      <workItem from="1519963927740" duration="19000" />
-      <workItem from="1519984171899" duration="1065000" />
-      <workItem from="1529289341012" duration="675000" />
+      <workItem from="1519872141371" duration="69000" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
     </task>
     <task id="LOCAL-00001" summary="expand">
       <created>1517882462544</created>
@@ -274,10 +312,14 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="77808000" />
+<<<<<<< HEAD
+    <option name="totallyTimeSpent" value="69800000" />
+=======
+    <option name="totallyTimeSpent" value="74344000" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1376" height="754" extended-state="6" />
+    <frame x="-8" y="-8" width="1376" height="754" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21470588" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -321,46 +363,58 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/slider.js">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
+        <state relative-caret-position="18226">
+          <caret line="703" column="45" selection-start-line="703" selection-start-column="45" selection-end-line="703" selection-end-column="45" />
+=======
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/demos/1/index.html">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
+        <state relative-caret-position="338">
+          <caret line="13" column="36" selection-start-line="13" selection-start-column="36" selection-end-line="13" selection-end-column="36" />
+=======
         <state relative-caret-position="460">
           <caret line="23" column="39" selection-start-line="23" selection-start-column="39" selection-end-line="23" selection-end-column="39" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/demos/1/style.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="840">
-          <caret line="42" column="24" selection-start-line="42" selection-start-column="24" selection-end-line="42" selection-end-column="24" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/slider.js">
-      <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#1101#1506#2" expanded="true" />
+            <element signature="e#1547#1945#2" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/demos/1/index.html">
+    <entry file="file://$PROJECT_DIR$/demos/2/style.css">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="460">
-          <caret line="23" column="39" selection-start-line="23" selection-start-column="39" selection-end-line="23" selection-end-column="39" />
-          <folding />
+        <state relative-caret-position="390">
+          <caret line="15" column="18" selection-start-line="15" selection-start-column="18" selection-end-line="15" selection-end-column="18" />
+          <folding>
+            <element signature="e#1036#1441#2" expanded="true" />
+            <element signature="e#1482#1880#2" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/demos/1/style.css">
+    <entry file="file://$PROJECT_DIR$/demos/2/index.html">
       <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="364">
+          <caret line="14" column="38" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
+=======
         <state relative-caret-position="840">
           <caret line="42" column="24" selection-start-line="42" selection-start-column="24" selection-end-line="42" selection-end-column="24" />
           <folding />
@@ -411,6 +465,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
           <folding />
         </state>
       </provider>
@@ -450,6 +505,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="364">
           <caret line="14" column="38" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -488,6 +544,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="364">
           <caret line="14" column="38" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -526,6 +583,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -564,6 +622,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="442">
           <caret line="17" column="34" selection-start-line="17" selection-start-column="34" selection-end-line="17" selection-end-column="34" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -690,9 +749,16 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="364">
           <caret line="14" column="38" selection-start-line="14" selection-start-column="38" selection-end-line="14" selection-end-column="38" />
+          <folding />
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
+    <entry file="file://$PROJECT_DIR$/demos/1/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="338">
+          <caret line="13" column="36" selection-start-line="13" selection-start-column="36" selection-end-line="13" selection-end-column="36" />
+=======
     <entry file="file://$PROJECT_DIR$/demos/1/style.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="840">
@@ -705,14 +771,32 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="460">
           <caret line="23" column="39" selection-start-line="23" selection-start-column="39" selection-end-line="23" selection-end-column="39" />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/slider.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="57" column="83" selection-start-line="57" selection-start-column="83" selection-end-line="57" selection-end-column="83" />
+<<<<<<< HEAD
+        <state relative-caret-position="338">
+          <caret line="13" column="27" selection-start-line="13" selection-start-column="27" selection-end-line="13" selection-end-column="27" />
+          <folding>
+            <element signature="e#1101#1506#2" expanded="true" />
+            <element signature="e#1547#1945#2" expanded="true" />
+          </folding>
+=======
+        <state relative-caret-position="285">
+          <caret line="289" column="31" selection-start-line="289" selection-start-column="31" selection-end-line="289" selection-end-column="31" />
+          <folding />
+>>>>>>> b5665bc9e643297eb70e5be48d225571951a4415
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/slider.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="442">
+          <caret line="640" column="27" selection-start-line="640" selection-start-column="27" selection-end-line="640" selection-end-column="27" />
           <folding />
         </state>
       </provider>
