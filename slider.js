@@ -891,11 +891,10 @@ function initSlider(root) {
                     var swipeAngle = Math.abs(event.angle);
                     swipeEnabled = (swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle)
                         && !getIsMoving();
-                    swipeEnabled = true;
 
                     if (swipeEnabled) {
                         root.classList.add("dragging");
-                        // container.slideLeft0 = container.slideLeft;
+                        container.slideLeft0 = container.slideLeft;
                         clearAutorun();
                     }
                     break;
