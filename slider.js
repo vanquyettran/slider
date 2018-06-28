@@ -895,7 +895,7 @@ function initSlider(root) {
 
                     if (swipeEnabled) {
                         root.classList.add("dragging");
-                        container.slideLeft0 = container.slideLeft;
+                        // container.slideLeft0 = container.slideLeft;
                         clearAutorun();
                     }
                     break;
