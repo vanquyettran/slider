@@ -918,14 +918,14 @@ function initSlider(root) {
                         root.classList.remove("dragging");
                         if (deltaX !== 0) {
                             var overallVelocityX = Math.floor(event.overallVelocityX * 1000) / 1000;
-                            var a = deltaX > 0 ? 0.9 : 0.1;
+                            var a = deltaX > 0 ? 0.95 : 0.05;
 
                             // if swipe quickly
                             // console.log(overallVelocityX);
                             if (overallVelocityX > 0.5) {
-                                a += 0.1;
+                                a += 0.05;
                             } else if (overallVelocityX < -0.5) {
-                                a -= 0.1;
+                                a -= 0.05;
                             }
 
                             var deltaIndex = Math.ceil(- a - deltaX / pageWidth) * pageSize;
