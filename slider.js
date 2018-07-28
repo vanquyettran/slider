@@ -55,7 +55,7 @@ function initSlider(root) {
     var displayNavigatorSmall = root.getAttribute("data-display-navigator-small");
 
     // swipe angle max
-    var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 90;
+    var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 45;
 
     // item aspect ratio
     var itemAspectRatioConf = root.getAttribute("data-item-aspect-ratio");
@@ -889,17 +889,24 @@ function initSlider(root) {
             switch (event.type) {
                 case "panstart":
                     var swipeAngle = Math.abs(event.angle);
-                    swipeEnabled = (swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle)
-                        && !getIsMoving();
+                    var velocityX = Math.abs(event.velocityX);
+                    swipeEnabled = !getIsMoving()
+                        && !event.isFinal
+                        // && velocityX > 0.1
+                        && (swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle);
 
                     if (swipeEnabled) {
                         root.classList.add("dragging");
                         container.slideLeft0 = container.slideLeft;
                         clearAutorun();
                     }
+                    // console.log(swipeEnabled, swipeAngle, maxSwipeAngle, 180 - maxSwipeAngle, container.slideLeft0);
+                    console.log(Math.abs(event.angle), event.type, JSON.parse(JSON.stringify(event)));
                     break;
                 case "panleft":
                 case "panright":
+                    // console.log(Math.abs(event.angle), event);
+                    // console.log(container.slideLeft, deltaX, swipeEnabled, Math.abs(event.angle));
                     if (swipeEnabled && deltaX !== 0) {
                         container.slideLeft = container.slideLeft0 + deltaX;
                         container.style.left = container.slideLeft + "px";
