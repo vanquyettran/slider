@@ -2,6 +2,8 @@
  * Created by Quyet on 1/22/2018.
  */
 
+"use strict";
+
 /**
  *
  * @param {HTMLElement} root
@@ -55,7 +57,7 @@ function initSlider(root) {
     var displayNavigatorSmall = root.getAttribute("data-display-navigator-small");
 
     // swipe angle max
-    var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 45;
+    var maxSwipeAngle = parseFloat(root.getAttribute("data-max-swipe-angle")) || 60; // 180 / 3 = 60
 
     // item aspect ratio
     var itemAspectRatioConf = root.getAttribute("data-item-aspect-ratio");
