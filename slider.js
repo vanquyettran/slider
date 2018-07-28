@@ -2,7 +2,7 @@
  * Created by Quyet on 1/22/2018.
  */
 
-"use strict";
+// "use strict";
 
 /**
  *
