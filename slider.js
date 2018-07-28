@@ -889,7 +889,7 @@ function initSlider(root) {
             switch (event.type) {
                 case "panstart":
                     var swipeAngle = Math.abs(event.angle);
-                    var velocityX = Math.abs(event.velocityX);
+                    // var velocityX = Math.abs(event.velocityX);
                     swipeEnabled = !getIsMoving()
                         && !event.isFinal
                         // && velocityX > 0.1
