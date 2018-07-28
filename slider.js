@@ -901,7 +901,7 @@ function initSlider(root) {
                         clearAutorun();
                     }
                     // console.log(swipeEnabled, swipeAngle, maxSwipeAngle, 180 - maxSwipeAngle, container.slideLeft0);
-                    console.log(Math.abs(event.angle), event.type, JSON.parse(JSON.stringify(event)));
+                    // console.log(Math.abs(event.angle), event.type, JSON.parse(JSON.stringify(event)));
                     break;
                 case "panleft":
                 case "panright":
