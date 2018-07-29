@@ -919,16 +919,17 @@ function initSlider(root) {
                     if (swipeEnabled) {
                         root.classList.remove("dragging");
                         if (deltaX !== 0) {
+                            var ovBreakpoint = 0.1;
+                            var aThreshold = 0.5;
+
                             var overallVelocityX = Math.floor(event.overallVelocityX * 1000) / 1000;
-                            var a = deltaX > 0 ? 0.8 : 0.2;
+                            var a = deltaX > 0 ? (1 - aThreshold) : aThreshold;
 
                             // if swipe quickly
-                            // console.log(overallVelocityX);
-                            var ovBreakpoint = 0.2;
                             if (overallVelocityX > ovBreakpoint) {
-                                a += 0.2;
+                                a += aThreshold;
                             } else if (overallVelocityX < -ovBreakpoint) {
-                                a -= 0.2;
+                                a -= aThreshold;
                             }
 
                             var deltaIndex = Math.ceil(- a - deltaX / pageWidth) * pageSize;
