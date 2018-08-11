@@ -34,6 +34,10 @@ function initSlider(root) {
     // Slide time
     var slideTime = parseInt(root.getAttribute("data-slide-time"));
 
+    // css transition timing function
+    var slideTiming = root.getAttribute("data-slide-timing");
+    var swipeTiming = root.getAttribute("data-swipe-timing");
+
     // Autorun
     var autorunDelay = parseInt(root.getAttribute("data-autorun-delay"));
     var autorunPauseOnHover = root.getAttribute("data-autorun-pause-on-hover") === "true";
@@ -100,6 +104,13 @@ function initSlider(root) {
             throw Error("Slide time must be the multiple of 10.");
         }
     }
+    if (!slideTiming) {
+        slideTiming = "linear";
+    }
+    if (!swipeTiming) {
+        swipeTiming = "ease-out";
+    }
+
     if (!isNaN(autorunDelay)) {
         if (autorunDelay < 500) {
             throw Error("Autorun delay must be an integer is not less than 500.");
@@ -557,7 +568,7 @@ function initSlider(root) {
         });
     };
 
-    var updateSliderItemPositions = function (motionDisabled, useCssTransition) {
+    var updateSliderItemPositions = function (motionDisabled, useCssTransition, causeSwiped) {
         // positions
         var container = sliderItemsWrapper;
         var lastSlideLeft = container.slideLeft || 0;
@@ -573,7 +584,8 @@ function initSlider(root) {
             container.style.left = container.slideLeft + "px";
         } else {
             if (useCssTransition) {
-                container.style.transition = "left " + slideTime + "ms";
+                var transitionTiming = causeSwiped ? swipeTiming : slideTiming;
+                container.style.transition = "left " + slideTime + "ms " + transitionTiming + " 0ms";
                 container.style.left = container.slideLeft + "px";
                 setTimeout(function () {
                     container.style.transition = "unset";
@@ -705,17 +717,17 @@ function initSlider(root) {
 
     var movingStateClearer;
     var isHeightsChangeOnSlide = /adjust-by-active-items|adjust-by-typed-items/.test(itemAspectRatioConf);
-    var makeMove = function (motionDisabled) {
+    var makeMove = function (motionDisabled, causeSwiped) {
         if (motionDisabled || !getIsMoving()) {
             updateSliderItemActiveStates();
             if (isHeightsChangeOnSlide) {
                 updateHeightBasedValues(motionDisabled, function () {
-                    updateSliderItemPositions(motionDisabled, true);
+                    updateSliderItemPositions(motionDisabled, true, causeSwiped);
                     updateNavItemPositions();
                     updateArrowsState();
                 });
             } else {
-                updateSliderItemPositions(motionDisabled, true);
+                updateSliderItemPositions(motionDisabled, true, causeSwiped);
                 updateNavItemPositions();
                 updateArrowsState();
             }
@@ -734,7 +746,7 @@ function initSlider(root) {
     var _init = function () {
         updateWidthBasedValues();
         updateHeightBasedValues(true, function () {
-            updateSliderItemPositions(true, true);
+            updateSliderItemPositions(true, true, false);
             updateNavItemPositions();
             updateArrowsState();
             root.classList.add("initialized");
@@ -945,7 +957,7 @@ function initSlider(root) {
                                 setCurrentIndex(currentIndex + deltaIndex);
                                 setTimeout(scrollIntoView, slideTime);
                             }
-                            makeMove();
+                            makeMove(false, true);
 
                             // autorun
                             if (displayThumbnails && currentIndex < pageSize) {
