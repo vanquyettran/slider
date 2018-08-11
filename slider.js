@@ -557,7 +557,7 @@ function initSlider(root) {
         });
     };
 
-    var updateSliderItemPositions = function (motionDisabled) {
+    var updateSliderItemPositions = function (motionDisabled, useCssTransition) {
         // positions
         var container = sliderItemsWrapper;
         var lastSlideLeft = container.slideLeft || 0;
@@ -572,17 +572,25 @@ function initSlider(root) {
         if (motionDisabled || slideTime === 0) {
             container.style.left = container.slideLeft + "px";
         } else {
-            var speed = getAverageMotionSpeed(container.slideLeft - lastSlideLeft, slideTime / 10);
-            var left = 0 + lastSlideLeft;
-            var time = 0;
-            var inter = setInterval(function () {
-                left += speed;
-                time += 10;
-                container.style.left = roundDistance(left) + "px";
-                if (time === slideTime) {
-                    clearInterval(inter);
-                }
-            }, 10);
+            if (useCssTransition) {
+                container.style.transition = "left " + slideTime + "ms";
+                container.style.left = container.slideLeft + "px";
+                setTimeout(function () {
+                    container.style.transition = "unset";
+                }, slideTime);
+            } else {
+                var speed = getAverageMotionSpeed(container.slideLeft - lastSlideLeft, slideTime / 10);
+                var left = 0 + lastSlideLeft;
+                var time = 0;
+                var inter = setInterval(function () {
+                    left += speed;
+                    time += 10;
+                    container.style.left = roundDistance(left) + "px";
+                    if (time === slideTime) {
+                        clearInterval(inter);
+                    }
+                }, 10);
+            }
         }
     };
 
@@ -702,12 +710,12 @@ function initSlider(root) {
             updateSliderItemActiveStates();
             if (isHeightsChangeOnSlide) {
                 updateHeightBasedValues(motionDisabled, function () {
-                    updateSliderItemPositions(motionDisabled);
+                    updateSliderItemPositions(motionDisabled, true);
                     updateNavItemPositions();
                     updateArrowsState();
                 });
             } else {
-                updateSliderItemPositions(motionDisabled);
+                updateSliderItemPositions(motionDisabled, true);
                 updateNavItemPositions();
                 updateArrowsState();
             }
@@ -726,7 +734,7 @@ function initSlider(root) {
     var _init = function () {
         updateWidthBasedValues();
         updateHeightBasedValues(true, function () {
-            updateSliderItemPositions(true);
+            updateSliderItemPositions(true, true);
             updateNavItemPositions();
             updateArrowsState();
             root.classList.add("initialized");
