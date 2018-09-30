@@ -2,13 +2,76 @@
  * Created by Quyet on 1/22/2018.
  */
 
-// "use strict";
+"use strict";
 
 /**
  *
  * @param {HTMLElement} root
  */
 function initSlider(root) {
+
+    var empty = function (element) {
+        while (element.firstChild) {
+            element.removeChild(element.firstChild);
+        }
+    };
+
+    var style = function (obj) {
+        var result_array = [];
+        var attrName;
+        for (attrName in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, attrName)) {
+                result_array.push(attrName + ": " + obj[attrName]);
+            }
+        }
+        return result_array.join("; ");
+    };
+
+    var appendChildren = function (node, content) {
+        var append = function (t) {
+            if (/string|number/.test(typeof t)) {
+                node.innerHTML += t;
+            } else if (t instanceof HTMLElement) {
+                node.appendChild(t);
+            }
+        };
+        if (content instanceof Array) {
+            content.forEach(function (item) {
+                append(item);
+            });
+        } else {
+            append(content);
+        }
+    };
+
+    var setAttributes = function (node, attributes) {
+        if (attributes) {
+            var attrName;
+            for (attrName in attributes) {
+                if (attributes.hasOwnProperty(attrName)) {
+                    var attrValue = attributes[attrName];
+                    switch (typeof attrValue) {
+                        case "string":
+                        case "number":
+                            node.setAttribute(attrName, attrValue);
+                            break;
+                        case "function":
+                            node[attrName] = attrValue;
+                            break;
+                        default:
+                    }
+                }
+            }
+        }
+    };
+
+    var element =function (nodeName, content, attributes) {
+        var node = document.createElement(nodeName);
+        appendChildren(node, content);
+        setAttributes(node, attributes);
+        return node;
+    };
+
     // View offsets
     var viewLargeOffset = parseInt(root.getAttribute("data-view-large-offset"));
     var viewMediumOffset = parseInt(root.getAttribute("data-view-medium-offset"));
@@ -980,66 +1043,4 @@ function initSlider(root) {
         }
     });
 
-}
-
-function element(nodeName, content, attributes) {
-    var node = document.createElement(nodeName);
-    appendChildren(node, content);
-    setAttributes(node, attributes);
-    return node;
-}
-
-function appendChildren(node, content) {
-    var append = function (t) {
-        if (/string|number/.test(typeof t)) {
-            node.innerHTML += t;
-        } else if (t instanceof HTMLElement) {
-            node.appendChild(t);
-        }
-    };
-    if (content instanceof Array) {
-        content.forEach(function (item) {
-            append(item);
-        });
-    } else {
-        append(content);
-    }
-}
-
-function setAttributes(node, attributes) {
-    if (attributes) {
-        var attrName;
-        for (attrName in attributes) {
-            if (attributes.hasOwnProperty(attrName)) {
-                var attrValue = attributes[attrName];
-                switch (typeof attrValue) {
-                    case "string":
-                    case "number":
-                        node.setAttribute(attrName, attrValue);
-                        break;
-                    case "function":
-                        node[attrName] = attrValue;
-                        break;
-                    default:
-                }
-            }
-        }
-    }
-}
-
-function empty(element) {
-    while (element.firstChild) {
-        element.removeChild(element.firstChild);
-    }
-}
-
-function style(obj) {
-    var result_array = [];
-    var attrName;
-    for (attrName in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, attrName)) {
-            result_array.push(attrName + ": " + obj[attrName]);
-        }
-    }
-    return result_array.join("; ");
 }
