@@ -65,11 +65,15 @@ function initSlider(root) {
         }
     };
 
-    var element =function (nodeName, content, attributes) {
+    var element = function (nodeName, content, attributes) {
         var node = document.createElement(nodeName);
         appendChildren(node, content);
         setAttributes(node, attributes);
         return node;
+    };
+    
+    var getRandomInt = function (min, max) {
+        return Math.floor(Math.random() * (max - min + 1) ) + min;
     };
 
     // View offsets
@@ -100,6 +104,12 @@ function initSlider(root) {
     // css transition timing function
     var slideTiming = root.getAttribute("data-slide-timing");
     var swipeTiming = root.getAttribute("data-swipe-timing");
+
+    // fading transition timing and transform
+    var fadingInTransforms = root.getAttribute("data-fading-in-transforms");
+    var fadingOutTransforms = root.getAttribute("data-fading-out-transforms");
+    var fadingInTimings = root.getAttribute("data-fading-in-timings");
+    var fadingOutTimings = root.getAttribute("data-fading-out-timings");
 
     // Autorun
     var autorunDelay = parseInt(root.getAttribute("data-autorun-delay"));
@@ -173,6 +183,31 @@ function initSlider(root) {
     if (!swipeTiming) {
         swipeTiming = "ease-out";
     }
+    if (!fadingInTimings) {
+        fadingInTimings = "ease";
+    }
+    if (!fadingOutTimings) {
+        fadingOutTimings = "ease";
+    }
+    if (!fadingInTransforms) {
+        fadingInTransforms = "translateX(10%) scale(1.2)";
+    }
+    if (!fadingOutTransforms) {
+        fadingOutTransforms = "translateX(-10%) scale(0.9)";
+    }
+
+    fadingInTimings = fadingInTimings.split("|");
+    fadingOutTimings = fadingOutTimings.split("|");
+    fadingInTransforms = fadingInTransforms.split("|");
+    fadingOutTransforms = fadingOutTransforms.split("|");
+
+    if (fadingInTimings.length !== fadingOutTimings.length) {
+        throw Error("fading-in-timings and fading-out-timings must have the same size.");
+    }
+    if (fadingInTransforms.length !== fadingOutTransforms.length) {
+        throw Error("fading-in-transforms and fading-out-transforms must have the same size.");
+    }
+
 
     if (!isNaN(autorunDelay)) {
         if (autorunDelay < 500) {
@@ -244,6 +279,13 @@ function initSlider(root) {
         }
     };
 
+    var moveTypes = {
+        immediate: 0,
+        translational: 1,
+        swiping: 2,
+        fading: 3
+    };
+
     calcViewWidthBasedValues();
 
     root.style = style({
@@ -291,7 +333,7 @@ function initSlider(root) {
                                 newIndex = currentIndex - pageSize;
                             }
                             setCurrentIndex(newIndex);
-                            makeMove();
+                            makeMove(moveTypes.translational);
                         }
                     }
                 },
@@ -314,10 +356,10 @@ function initSlider(root) {
                         onclick: function () {
                             if (child.clickable && currentIndex === 0) {
                                 setCurrentIndex(index + pageSize); // why plus `pageSize`? because first element is thumbnails block
-                                makeMove();
+                                makeMove(moveTypes.translational);
                             } else if (currentIndex > 0) {
                                 setCurrentIndex(0);
-                                makeMove();
+                                makeMove(moveTypes.translational);
                             }
                         },
                         "class": "thumbnail" + (child.clickable ? " clickable" : "")
@@ -492,10 +534,10 @@ function initSlider(root) {
     // for the case of exact aspect ratio provided
     calcItemAspectRatio();
 
-    var updateHeights = function (motionDisabled) {
+    var updateHeights = function (moveType) {
         var lastItemHeight = itemWidth / lastItemAspectRatio;
         var itemHeight = itemWidth / itemAspectRatio;
-        if (motionDisabled || slideTime === 0) {
+        if (moveType === moveTypes.immediate || slideTime === 0) {
             sliderItemsWrapper.style.height = itemHeight + "px";
             sliderItems.forEach(function (item) {
                 item.style.height = itemHeight + "px";
@@ -581,7 +623,7 @@ function initSlider(root) {
                 if (!getIsMoving()) {
                     if (currentIndex !== pageSize * this.navIndex) {
                         setCurrentIndex(pageSize * this.navIndex);
-                        makeMove();
+                        makeMove(moveTypes.immediate);
                         setTimeout(scrollIntoView, slideTime);
                     }
                     lastManualDirection = 0;
@@ -594,9 +636,14 @@ function initSlider(root) {
     };
     renderNavItems();
 
+    var getLastSliderItemIndex = function () {
+        return mainItems.length - (displayThumbnails ? 0 : pageSize);
+    };
+
+    var previousIndex = 0;
     var currentIndex = 0;
     var setCurrentIndex = function (newIndex) {
-        var lastIndex = mainItems.length - (displayThumbnails ? 0 : pageSize);
+        var lastIndex = getLastSliderItemIndex();
         if (sliderItems.length < pageSize) {
             newIndex = 0;
         } else if (newIndex < 0) {
@@ -614,16 +661,26 @@ function initSlider(root) {
         } else if (displayThumbnails && newIndex > 0 && newIndex < pageSize) {
             newIndex = pageSize;
         }
+        previousIndex = currentIndex;
         currentIndex = newIndex;
+    };
+
+    var sliderItemIsPrevious = function (index) {
+        var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
+        return thumbnailsDeltaIndex + index >= previousIndex
+            && thumbnailsDeltaIndex + index < previousIndex + pageSize
+    };
+
+    var sliderItemIsActive = function (index) {
+        var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
+        return thumbnailsDeltaIndex + index >= currentIndex
+            && thumbnailsDeltaIndex + index < currentIndex + pageSize
     };
 
     var updateSliderItemActiveStates = function () {
         // flag class
-        var thumbnailsDeltaIndex = displayThumbnails ? (pageSize - 1) : 0;
         sliderItems.forEach(function (item, index) {
-            if (thumbnailsDeltaIndex + index >= currentIndex
-                && thumbnailsDeltaIndex + index < currentIndex + pageSize
-            ) {
+            if (sliderItemIsActive(index)) {
                 item.classList.add("active");
             } else {
                 item.classList.remove("active");
@@ -631,7 +688,7 @@ function initSlider(root) {
         });
     };
 
-    var updateSliderItemPositions = function (motionDisabled, useCssTransition, causeSwiped) {
+    var updateSliderItemPositions = function (moveType, useCssTransition) {
         // positions
         var container = sliderItemsWrapper;
         var lastSlideLeft = container.slideLeft || 0;
@@ -643,11 +700,75 @@ function initSlider(root) {
         } else {
             container.slideLeft = itemWidth * (previewLeft - currentIndex);
         }
-        if (motionDisabled || slideTime === 0) {
+        if (moveType === moveTypes.immediate || slideTime === 0) {
             container.style.left = container.slideLeft + "px";
+        } else if (moveType === moveTypes.fading) {
+            var clonedPreviousSliderItems = [];
+            var activeSliderItemIndexes = [];
+            sliderItems.forEach(function (item, index) {
+                if (sliderItemIsPrevious(index)) {
+                    var clonedItem = sliderItems[index].cloneNode(true);
+                    clonedPreviousSliderItems.push(clonedItem);
+                    sliderItemsWrapper.appendChild(clonedItem);
+                }
+
+                // don't use `else if`
+                // an item can be both previous and active
+                if (sliderItemIsActive(index)) {
+                    activeSliderItemIndexes.push(index);
+                }
+            });
+
+            var fadingTimingRandIndex = getRandomInt(0, fadingInTimings.length - 1);
+            var fadingInTiming = fadingInTimings[fadingTimingRandIndex];
+            var fadingOutTiming = fadingOutTimings[fadingTimingRandIndex];
+
+            var fadingTransformRandIndex = getRandomInt(0, fadingInTransforms.length - 1);
+            var fadingInTransform = fadingInTransforms[fadingTransformRandIndex];
+            var fadingOutTransform = fadingOutTransforms[fadingTransformRandIndex];
+
+            console.log(fadingInTransform, fadingOutTransform);
+            console.log(fadingInTiming, fadingOutTiming);
+
+            setTimeout(function () {
+                container.style.left = container.slideLeft + "px";
+
+                clonedPreviousSliderItems.forEach(function (clonedItem, clonedIndex) {
+                    var activeSliderItemIndex = activeSliderItemIndexes[clonedIndex];
+                    clonedItem.style.left = sliderItems[activeSliderItemIndex].style.left;
+                    clonedItem.style.transition
+                        = "opacity " + slideTime + "ms " + fadingOutTiming + " 0ms, "
+                        + "transform " + slideTime + "ms " + fadingOutTiming + " 0ms";
+                    clonedItem.style.opacity = 0;
+                    clonedItem.style.transform = fadingOutTransform;
+                });
+
+                activeSliderItemIndexes.forEach(function (sliderItemIndex) {
+                    var sliderItem = sliderItems[sliderItemIndex];
+                    sliderItem.style.opacity = 0;
+                    sliderItem.style.transform = fadingInTransform;
+                    setTimeout(function () {
+                        sliderItem.style.transition
+                            = "opacity " + slideTime + "ms " + fadingInTiming + " 0ms, "
+                            + "transform " + slideTime + "ms " + fadingInTiming + " 0ms";
+                        sliderItem.style.opacity = 1;
+                        sliderItem.style.transform = "unset";
+                    }, 10);
+                });
+
+                setTimeout(function () {
+                    clonedPreviousSliderItems.forEach(function (clonedItem) {
+                        clonedItem.parentNode.removeChild(clonedItem);
+                    });
+                    activeSliderItemIndexes.forEach(function (sliderItemIndex) {
+                        var sliderItem = sliderItems[sliderItemIndex];
+                        sliderItem.style.transition = "unset";
+                    });
+                }, slideTime);
+            }, 100);
         } else {
             if (useCssTransition) {
-                var transitionTiming = causeSwiped ? swipeTiming : slideTiming;
+                var transitionTiming = moveTypes.swiping ? swipeTiming : slideTiming;
                 container.style.transition = "left " + slideTime + "ms " + transitionTiming + " 0ms";
                 container.style.left = container.slideLeft + "px";
                 setTimeout(function () {
@@ -735,7 +856,7 @@ function initSlider(root) {
     };
 
     var updateArrowsState = function () {
-        var lastIndex = mainItems.length - (displayThumbnails ? 0 : pageSize);
+        var lastIndex = getLastSliderItemIndex();
         prevBtn.disabled = currentIndex < 0 || (!repeatAtFirst && currentIndex === 0);
         nextBtn.disabled = currentIndex > lastIndex || (!repeatAtLast && currentIndex === lastIndex);
     };
@@ -746,10 +867,10 @@ function initSlider(root) {
         renderSliderItems();
     };
 
-    var updateHeightBasedValues = function (motionDisabled, callback) {
+    var updateHeightBasedValues = function (moveType, callback) {
         calcItemAspectRatio();
         if (isFinite(itemAspectRatio)) {
-            updateHeights(motionDisabled);
+            updateHeights(moveType);
             if ("function" === typeof callback) {
                 callback();
             }
@@ -758,7 +879,7 @@ function initSlider(root) {
                 calcItemAspectRatio();
                 if (isFinite(itemAspectRatio)) {
                     clearInterval(inter);
-                    updateHeights(motionDisabled);
+                    updateHeights(moveType);
                     if ("function" === typeof callback) {
                         callback();
                     }
@@ -779,25 +900,28 @@ function initSlider(root) {
     };
 
     var movingStateClearer;
-    var isHeightsChangeOnSlide = /adjust-by-active-items|adjust-by-typed-items/.test(itemAspectRatioConf);
-    var makeMove = function (motionDisabled, causeSwiped) {
-        if (motionDisabled || !getIsMoving()) {
+    var isHeightsChangeOnSlide = [
+            'adjust-by-active-items',
+            'adjust-by-typed-items'
+        ].indexOf(itemAspectRatioConf) > -1;
+
+    var makeMove = function (moveType) {
+        if (moveType === moveTypes.immediate || !getIsMoving()) {
             updateSliderItemActiveStates();
             if (isHeightsChangeOnSlide) {
-                updateHeightBasedValues(motionDisabled, function () {
-                    updateSliderItemPositions(motionDisabled, true, causeSwiped);
+                updateHeightBasedValues(moveType, function () {
+                    updateSliderItemPositions(moveType, true);
                     updateNavItemPositions();
                     updateArrowsState();
                 });
             } else {
-                updateSliderItemPositions(motionDisabled, true, causeSwiped);
+                updateSliderItemPositions(moveType, true);
                 updateNavItemPositions();
                 updateArrowsState();
             }
         }
-        if (!motionDisabled) {
+        if (!moveType === moveTypes.immediate) {
             setMovingState();
-            // clearTimeout(movingStateTimeout);
             movingStateClearer = setTimeout(function () {
                 clearMovingState();
             }, slideTime);
@@ -808,8 +932,8 @@ function initSlider(root) {
 
     var _init = function () {
         updateWidthBasedValues();
-        updateHeightBasedValues(true, function () {
-            updateSliderItemPositions(true, true, false);
+        updateHeightBasedValues(moveTypes.immediate, function () {
+            updateSliderItemPositions(moveTypes.immediate, true);
             updateNavItemPositions();
             updateArrowsState();
             root.classList.add("initialized");
@@ -819,14 +943,14 @@ function initSlider(root) {
     _init();
     window.addEventListener("load", _init);
 
-    var prev = function () {
+    var prev = function (moveType) {
         setCurrentIndex(currentIndex - pageSize);
-        makeMove();
+        makeMove(moveType);
     };
 
-    var next = function () {
+    var next = function (moveType) {
         setCurrentIndex(currentIndex + pageSize);
-        makeMove();
+        makeMove(moveType);
     };
 
     var autorunPaused = false;
@@ -844,20 +968,20 @@ function initSlider(root) {
             autorun = setInterval(function () {
                 if (!autorunPaused) {
                     var mainFirstIndex = displayThumbnails ? pageSize : 0;
-                    var lastIndex = mainItems.length - (displayThumbnails ? 0 : pageSize);
+                    var lastIndex = getLastSliderItemIndex();
                     if (lastManualDirection === 1) {
                         if (currentIndex >= lastIndex) {
                             setCurrentIndex(mainFirstIndex);
-                            makeMove();
+                            makeMove(moveTypes.fading);
                         } else {
-                            next();
+                            next(moveTypes.fading);
                         }
                     } else if (lastManualDirection === -1) {
                         if (currentIndex <= mainFirstIndex) {
                             setCurrentIndex(lastIndex);
-                            makeMove();
+                            makeMove(moveTypes.fading);
                         } else {
-                            prev();
+                            prev(moveTypes.fading);
                         }
                     }
                 }
@@ -874,7 +998,7 @@ function initSlider(root) {
 
     prevBtn.addEventListener("click", function () {
         if (!getIsMoving()) {
-            prev();
+            prev(moveTypes.translational);
             if (displayThumbnails && currentIndex < pageSize) {
                 lastManualDirection = 0;
             } else {
@@ -889,7 +1013,11 @@ function initSlider(root) {
     });
     nextBtn.addEventListener("click", function () {
         if (!getIsMoving()) {
-            next();
+            if (currentIndex < getLastSliderItemIndex()) {
+                next(moveTypes.translational);
+            } else {
+                next(moveTypes.fading);
+            }
             if (displayThumbnails && currentIndex < pageSize) {
                 lastManualDirection = 0;
             } else {
@@ -946,10 +1074,10 @@ function initSlider(root) {
         renderNavItems();
         updateWidthBasedValues();
         if (isHeightsChangeOnSlide) {
-            makeMove(true);
+            makeMove(moveTypes.immediate);
         } else {
-            updateHeightBasedValues(true, function () {
-                makeMove(true);
+            updateHeightBasedValues(moveTypes.immediate, function () {
+                makeMove(moveTypes.immediate);
             });
         }
     });
@@ -1020,7 +1148,7 @@ function initSlider(root) {
                                 setCurrentIndex(currentIndex + deltaIndex);
                                 setTimeout(scrollIntoView, slideTime);
                             }
-                            makeMove(false, true);
+                            makeMove(moveTypes.swiping, true);
 
                             // autorun
                             if (displayThumbnails && currentIndex < pageSize) {
