@@ -77,7 +77,7 @@
 }
 
 .slider-item {
-    opacity: 0.5;
+    opacity: 0.2;
 }
 .slider.moving .slider-item,
 .slider.dragging .slider-item,

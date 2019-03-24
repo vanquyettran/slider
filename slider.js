@@ -183,29 +183,34 @@ function initSlider(root) {
     if (!swipeTiming) {
         swipeTiming = "ease-out";
     }
-    if (!fadingInTimings) {
-        fadingInTimings = "ease";
-    }
-    if (!fadingOutTimings) {
-        fadingOutTimings = "ease";
-    }
-    if (!fadingInTransforms) {
-        fadingInTransforms = "translateX(10%) scale(1.2)";
-    }
-    if (!fadingOutTransforms) {
-        fadingOutTransforms = "translateX(-10%) scale(0.9)";
-    }
 
-    fadingInTimings = fadingInTimings.split("|");
-    fadingOutTimings = fadingOutTimings.split("|");
-    fadingInTransforms = fadingInTransforms.split("|");
-    fadingOutTransforms = fadingOutTransforms.split("|");
+    var disableFading = !fadingInTimings && !fadingOutTimings && !fadingInTransforms && !fadingOutTransforms;
 
-    if (fadingInTimings.length !== fadingOutTimings.length) {
-        throw Error("fading-in-timings and fading-out-timings must have the same size.");
-    }
-    if (fadingInTransforms.length !== fadingOutTransforms.length) {
-        throw Error("fading-in-transforms and fading-out-transforms must have the same size.");
+    if (!disableFading) {
+        if (!fadingInTimings) {
+            fadingInTimings = "ease";
+        }
+        if (!fadingOutTimings) {
+            fadingOutTimings = "ease";
+        }
+        if (!fadingInTransforms) {
+            fadingInTransforms = "translateX(10%) scale(1.2)";
+        }
+        if (!fadingOutTransforms) {
+            fadingOutTransforms = "translateX(-10%) scale(0.9)";
+        }
+
+        fadingInTimings = fadingInTimings.split("|");
+        fadingOutTimings = fadingOutTimings.split("|");
+        fadingInTransforms = fadingInTransforms.split("|");
+        fadingOutTransforms = fadingOutTransforms.split("|");
+
+        if (fadingInTimings.length !== fadingOutTimings.length) {
+            throw Error("fading-in-timings and fading-out-timings must have the same size.");
+        }
+        if (fadingInTransforms.length !== fadingOutTransforms.length) {
+            throw Error("fading-in-transforms and fading-out-transforms must have the same size.");
+        }
     }
 
 
@@ -309,6 +314,7 @@ function initSlider(root) {
         position: "absolute",
         padding: 0,
         margin: 0,
+        opacity: 1,
         top: "unset",
         bottom: "unset",
         right: "unset",
@@ -702,7 +708,7 @@ function initSlider(root) {
         }
         if (moveType === moveTypes.immediate || slideTime === 0) {
             container.style.left = container.slideLeft + "px";
-        } else if (moveType === moveTypes.fading) {
+        } else if (moveType === moveTypes.fading && !disableFading) {
             var clonedPreviousSliderItems = [];
             var activeSliderItemIndexes = [];
             sliderItems.forEach(function (item, index) {
@@ -727,20 +733,23 @@ function initSlider(root) {
             var fadingInTransform = fadingInTransforms[fadingTransformRandIndex];
             var fadingOutTransform = fadingOutTransforms[fadingTransformRandIndex];
 
-            console.log(fadingInTransform, fadingOutTransform);
-            console.log(fadingInTiming, fadingOutTiming);
-
             setTimeout(function () {
                 container.style.left = container.slideLeft + "px";
 
-                clonedPreviousSliderItems.forEach(function (clonedItem, clonedIndex) {
-                    var activeSliderItemIndex = activeSliderItemIndexes[clonedIndex];
-                    clonedItem.style.left = sliderItems[activeSliderItemIndex].style.left;
-                    clonedItem.style.transition
-                        = "opacity " + slideTime + "ms " + fadingOutTiming + " 0ms, "
-                        + "transform " + slideTime + "ms " + fadingOutTiming + " 0ms";
-                    clonedItem.style.opacity = 0;
-                    clonedItem.style.transform = fadingOutTransform;
+                clonedPreviousSliderItems.forEach(function (clonedItem, index) {
+                    if (displayThumbnails && currentIndex === 0) {
+                        clonedItem.style.left = (index * itemWidth) + "px";
+                    } else {
+                        var activeSliderItemIndex = activeSliderItemIndexes[index];
+                        clonedItem.style.left = sliderItems[activeSliderItemIndex].style.left;
+                    }
+                    setTimeout(function () {
+                        clonedItem.style.transition
+                            = "opacity " + slideTime + "ms " + fadingOutTiming + " 0ms, "
+                            + "transform " + slideTime + "ms " + fadingOutTiming + " 0ms";
+                        clonedItem.style.opacity = 0;
+                        clonedItem.style.transform = fadingOutTransform;
+                    }, 10);
                 });
 
                 activeSliderItemIndexes.forEach(function (sliderItemIndex) {
@@ -998,7 +1007,11 @@ function initSlider(root) {
 
     prevBtn.addEventListener("click", function () {
         if (!getIsMoving()) {
-            prev(moveTypes.translational);
+            if (currentIndex === 0) {
+                prev(moveTypes.fading);
+            } else {
+                prev(moveTypes.translational);
+            }
             if (displayThumbnails && currentIndex < pageSize) {
                 lastManualDirection = 0;
             } else {
@@ -1013,10 +1026,10 @@ function initSlider(root) {
     });
     nextBtn.addEventListener("click", function () {
         if (!getIsMoving()) {
-            if (currentIndex < getLastSliderItemIndex()) {
-                next(moveTypes.translational);
-            } else {
+            if (currentIndex === getLastSliderItemIndex()) {
                 next(moveTypes.fading);
+            } else {
+                next(moveTypes.translational);
             }
             if (displayThumbnails && currentIndex < pageSize) {
                 lastManualDirection = 0;
