@@ -7,8 +7,11 @@
 /**
  *
  * @param {HTMLElement} root
+ * @param {object?} callbacks
+ * @param {function?} callbacks.onSlideStart
+ * @param {function?} callbacks.onSlideEnd
  */
-function initSlider(root) {
+function initSlider(root, callbacks) {
 
     var empty = function (element) {
         while (element.firstChild) {
@@ -907,6 +910,46 @@ function initSlider(root) {
     var getIsMoving = function () {
         return root.classList.contains("moving");
     };
+    var fireMovingStart = function () {
+        if (callbacks && 'function' === typeof callbacks.onSlideStart) {
+            var previousSliderItemIndexes = [];
+            var activeSliderItemIndexes = [];
+
+            sliderItems.forEach(function (item, index) {
+                if (sliderItemIsPrevious(index)) {
+                    previousSliderItemIndexes.push(index);
+                }
+
+                // don't use `else if`
+                // an item can be both previous and active
+                if (sliderItemIsActive(index)) {
+                    activeSliderItemIndexes.push(index);
+                }
+            });
+
+            callbacks.onSlideStart(sliderItems, activeSliderItemIndexes, previousSliderItemIndexes);
+        }
+    };
+    var fireMovingEnd = function () {
+        if (callbacks && 'function' === typeof callbacks.onSlideEnd) {
+            var previousSliderItemIndexes = [];
+            var activeSliderItemIndexes = [];
+
+            sliderItems.forEach(function (item, index) {
+                if (sliderItemIsPrevious(index)) {
+                    previousSliderItemIndexes.push(index);
+                }
+
+                // don't use `else if`
+                // an item can be both previous and active
+                if (sliderItemIsActive(index)) {
+                    activeSliderItemIndexes.push(index);
+                }
+            });
+
+            callbacks.onSlideEnd(sliderItems, activeSliderItemIndexes, previousSliderItemIndexes);
+        }
+    };
 
     var movingStateClearer;
     var isHeightsChangeOnSlide = [
@@ -929,10 +972,13 @@ function initSlider(root) {
                 updateArrowsState();
             }
         }
-        if (!moveType === moveTypes.immediate) {
+        if (moveType !== moveTypes.immediate) {
             setMovingState();
+            fireMovingStart();
+
             movingStateClearer = setTimeout(function () {
                 clearMovingState();
+                fireMovingEnd();
             }, slideTime);
         }
     };
@@ -1108,17 +1154,14 @@ function initSlider(root) {
     var hammer = new Hammer(swipeable);
     var swipeEnabled = true;
     hammer.on("panstart panleft panright panend pancancel", function (event) {
-        // console.log(event.type);
         if (sliderItems.length > pageSize) {
             var container = sliderItemsWrapper;
             var deltaX = Math.floor(event.deltaX * 1000) / 1000;
             switch (event.type) {
                 case "panstart":
                     var swipeAngle = Math.abs(event.angle);
-                    // var velocityX = Math.abs(event.velocityX);
                     swipeEnabled = !getIsMoving()
                         && !event.isFinal
-                        // && velocityX > 0.1
                         && (swipeAngle < maxSwipeAngle || swipeAngle > 180 - maxSwipeAngle);
 
                     if (swipeEnabled) {
@@ -1126,13 +1169,9 @@ function initSlider(root) {
                         container.slideLeft0 = container.slideLeft;
                         clearAutorun();
                     }
-                    // console.log(swipeEnabled, swipeAngle, maxSwipeAngle, 180 - maxSwipeAngle, container.slideLeft0);
-                    // console.log(Math.abs(event.angle), event.type, JSON.parse(JSON.stringify(event)));
                     break;
                 case "panleft":
                 case "panright":
-                    // console.log(Math.abs(event.angle), event);
-                    // console.log(container.slideLeft, deltaX, swipeEnabled, Math.abs(event.angle));
                     if (swipeEnabled && deltaX !== 0) {
                         container.slideLeft = container.slideLeft0 + deltaX;
                         container.style.left = container.slideLeft + "px";

@@ -65,7 +65,29 @@
        </div>
     </div>
     <script>
-        [].forEach.call(document.querySelectorAll(".slider"), initSlider);
+        [].forEach.call(document.querySelectorAll(".slider"), function (el) {
+            initSlider(el, {
+                onSlideStart: function (sliderItems, activeIndexes, previousIndexes) {
+                    console.log('start', activeIndexes, previousIndexes);
+                    sliderItems.filter(function (_, index) {
+                        return activeIndexes.indexOf(index) > -1;
+                    }).forEach(function (item) {
+                        item.querySelector('img').style.transition = 'transform 9s linear';
+                        item.querySelector('img').style.transform = 'scale(1.4)';
+                    });
+
+                    sliderItems.filter(function (_, index) {
+                        return previousIndexes.indexOf(index) > -1;
+                    }).forEach(function (item) {
+                        item.querySelector('img').style.transition = 'transform 0s';
+                        item.querySelector('img').style.transform = 'scale(1)';
+                    });
+                },
+                onSlideEnd: function (sliderItems, activeIndexes, previousIndexes) {
+                    console.log('e n d', activeIndexes, previousIndexes);
+                }
+            })
+        });
     </script>
 </body>
 </html>
