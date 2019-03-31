@@ -11,26 +11,15 @@
 <body>
     <div class="container">
         <div class="slider"
-             data-page-size-large="2"
-             data-page-size-medium="1"
-             data-page-size-small="1"
-             data-slide-time="3000"
-             data-display-arrows="true"
-             data-display-arrows-small="false"
-             data-display-navigator="true"
-             data-item-aspect-ratio="adjust-by-active-items"
-             data-display-thumbnails-large="true"
-             data-display-thumbnails-medium="false"
-             data-display-thumbnails-small="false"
-             data-preview-left="0.5"
-             data-preview-right="0.5"
+             data-item-aspect-ratio="1.77777777778"
              data-autorun-delay="6000"
-             data-autorun-pause-on-hover="true"
-             data-repeat-at-first="true"
-             data-repeat-at-last="true"
-             data-fading-in-transforms="translateX(-10px) scale(1.05) | translateX(20px) scale(0.96) | translateX(20px) translateY(-20px) scale(0.96)"
-             data-fading-out-transforms="translateX(100px) scale(1.2) | translateX(-200px) scale(0.8) | translateX(-200px) translateY(200px) scale(0.8)"
-             data-fading-in-timings="ease"
+             data-slide-time="1000"
+             data-slide-timing="ease"
+             data-swipe-timing="ease-out"
+             data-display-navigator="true"
+             data-fading-in-transforms="translateX(-5%) scale(1.2)|translateX(5%) scale(1.05)|translateX(5%) translateY(-5%) scale(0.91)"
+             data-fading-out-transforms="translateX(5%) rotateZ(72deg) scale(0.8)|translateX(-10%) scale(0.8)|translateX(-10%) translateY(-2%) scale(0.9)"
+             data-fading-in-timings="ease-in-out"
              data-fading-out-timings="ease"
         >
             <div class="inner" data-clickable="true">
@@ -68,13 +57,23 @@
     <script>
         [].forEach.call(document.querySelectorAll(".slider"), function (el) {
             initSlider(el, {
-                onSlideStart: function (sliderItems, activeIndexes, previousIndexes) {
-                    console.log('start', activeIndexes, previousIndexes);
+                onInitialized: function (sliderItems, activeIndexes, extras) {
                     sliderItems.filter(function (_, index) {
                         return activeIndexes.indexOf(index) > -1;
                     }).forEach(function (item) {
-                        item.querySelector('img').style.transition = 'transform 9s linear';
-                        item.querySelector('img').style.transform = 'scale(1.4)';
+                        console.log(item.querySelector('img'));
+                        setTimeout(function () {
+                            item.querySelector('img').style.transition = 'transform 6s linear';
+                            item.querySelector('img').style.transform = 'scale(1.5)';
+                        }, 10);
+                    });
+                },
+                onSlideStart: function (sliderItems, activeIndexes, previousIndexes, extras) {
+                    sliderItems.filter(function (_, index) {
+                        return activeIndexes.indexOf(index) > -1;
+                    }).forEach(function (item) {
+                        item.querySelector('img').style.transition = 'transform 6s linear';
+                        item.querySelector('img').style.transform = 'scale(1.5)';
                     });
 
                     sliderItems.filter(function (_, index) {
@@ -83,11 +82,8 @@
                         item.querySelector('img').style.transition = 'transform 0s';
                         item.querySelector('img').style.transform = 'scale(1)';
                     });
-                },
-                onSlideEnd: function (sliderItems, activeIndexes, previousIndexes) {
-                    console.log('e n d', activeIndexes, previousIndexes);
                 }
-            })
+            });
         });
     </script>
 </body>

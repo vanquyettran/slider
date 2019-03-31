@@ -2,16 +2,17 @@
  * Created by Quyet on 1/22/2018.
  */
 
-"use strict";
 
 /**
  *
  * @param {HTMLElement} root
  * @param {object?} callbacks
+ * @param {function?} callbacks.onInitialized
  * @param {function?} callbacks.onSlideStart
  * @param {function?} callbacks.onSlideEnd
  */
 function initSlider(root, callbacks) {
+    "use strict";
 
     var empty = function (element) {
         while (element.firstChild) {
@@ -927,7 +928,11 @@ function initSlider(root, callbacks) {
                 }
             });
 
-            callbacks.onSlideStart(sliderItems, activeSliderItemIndexes, previousSliderItemIndexes);
+            callbacks.onSlideStart(sliderItems, activeSliderItemIndexes, previousSliderItemIndexes, {
+                displayThumbnails: displayThumbnails,
+                slideTime: slideTime,
+                autorunDelay: autorunDelay
+            });
         }
     };
     var fireMovingEnd = function () {
@@ -947,7 +952,11 @@ function initSlider(root, callbacks) {
                 }
             });
 
-            callbacks.onSlideEnd(sliderItems, activeSliderItemIndexes, previousSliderItemIndexes);
+            callbacks.onSlideEnd(sliderItems, activeSliderItemIndexes, previousSliderItemIndexes, {
+                displayThumbnails: displayThumbnails,
+                slideTime: slideTime,
+                autorunDelay: autorunDelay
+            });
         }
     };
 
@@ -991,12 +1000,23 @@ function initSlider(root, callbacks) {
             updateSliderItemPositions(moveTypes.immediate, true);
             updateNavItemPositions();
             updateArrowsState();
-            root.classList.add("initialized");
+            root.classList.add('initialized');
+            if (callbacks && 'function' === typeof callbacks.onInitialized) {
+                var activeIndexes = sliderItems.filter(function (_, index) {
+                    return sliderItemIsActive(index);
+                }).map(function (_, index) {
+                    return index;
+                });
+                callbacks.onInitialized(sliderItems, activeIndexes, {
+                    displayThumbnails: displayThumbnails,
+                    slideTime: slideTime,
+                    autorunDelay: autorunDelay
+                });
+            }
         });
     };
 
     _init();
-    window.addEventListener("load", _init);
 
     var prev = function (moveType) {
         setCurrentIndex(currentIndex - pageSize);
