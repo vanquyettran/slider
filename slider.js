@@ -1,3 +1,5 @@
+import Hammer from './hammer';
+
 /**
  * Created by Quyet on 1/22/2018.
  */
@@ -7,8 +9,9 @@
 /**
  *
  * @param {HTMLElement} root
+ * @param {{}?} callbacks
  */
-function initSlider(root) {
+export default function initSlider(root, callbacks) {
 
     var empty = function (element) {
         while (element.firstChild) {
@@ -133,7 +136,7 @@ function initSlider(root) {
     var repeatAtFirst = root.getAttribute("data-repeat-at-first") === "true";
     var repeatAtLast = root.getAttribute("data-repeat-at-last") === "true";
 
-    //TODO: Handle errors
+    // Handle errors
 
     if ((!isNaN(viewLargeOffset) && viewLargeOffset < 1) || (!isNaN(viewMediumOffset) && viewMediumOffset < 1)) {
         throw Error("View offsets must be the integers are greater than 0.");
@@ -186,7 +189,17 @@ function initSlider(root) {
         throw Error("Max swipe angle must be in the range [0, 90]");
     }
 
-    //TODO: Main code
+    // Callbacks
+
+    if (!callbacks) {
+        callbacks = {
+            onCurrentIndexChange: null,
+            onExposeMoveTo: null,
+            onInitialized: null,
+        };
+    }
+
+    // Main code
 
     var roundDistance = function(d) {
         return Math.round(d);
@@ -615,7 +628,18 @@ function initSlider(root) {
             newIndex = pageSize;
         }
         currentIndex = newIndex;
+
+        if (callbacks.onCurrentIndexChange) {
+            callbacks.onCurrentIndexChange(currentIndex);
+        }
     };
+
+    if (callbacks.onExposeMoveTo) {
+        callbacks.onExposeMoveTo(function (index, motionDisabled) {
+            setCurrentIndex(index);
+            makeMove(motionDisabled);
+        });
+    }
 
     var updateSliderItemActiveStates = function () {
         // flag class
@@ -813,6 +837,9 @@ function initSlider(root) {
             updateNavItemPositions();
             updateArrowsState();
             root.classList.add("initialized");
+            if (callbacks.onInitialized) {
+                callbacks.onInitialized();
+            }
         });
     };
 
@@ -908,7 +935,7 @@ function initSlider(root) {
         appendChildren(root, [
             element(
                 "div",
-                displayArrows && pageCount > 1 ? [swipeable, prevBtn, nextBtn] : swipeable,
+                displayArrows ? [swipeable, prevBtn, nextBtn] : swipeable,
                 {
                     style: style({
                         display: "block",
@@ -954,7 +981,7 @@ function initSlider(root) {
         }
     });
 
-    //TODO: Swipe with hammer js
+    // Swipe with hammer js
 
     // Firstly, disable drag event for all elements are inside of slider
     [].forEach.call(root.querySelectorAll("*"), function (elm) {
